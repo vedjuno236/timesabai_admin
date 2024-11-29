@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+
 import '../models/department_model.dart';
 
 class ApiService {
@@ -7,7 +8,6 @@ class ApiService {
   Future<List<DepartmentModel>> fetchDepartments() async {
     try {
       QuerySnapshot snapshot = await _firestore.collection('Department').get();
-
 
       return snapshot.docs.map((doc) {
         return DepartmentModel(

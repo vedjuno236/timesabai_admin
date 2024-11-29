@@ -1,9 +1,11 @@
-import 'package:adaptive_dialog/adaptive_dialog.dart';
+import 'package:admin_timesabai/views/users_views/screens/employee_screens/report_employee.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
+import 'package:panara_dialogs/panara_dialogs.dart';
 
 import '../../../../service/employee_service.dart';
 
@@ -16,15 +18,15 @@ class EmployeeScreens extends StatefulWidget {
 
 class _EmployeeScreensState extends State<EmployeeScreens> {
   final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _idController =  TextEditingController();
-  final TextEditingController _passController =  TextEditingController();
+  final TextEditingController _idController = TextEditingController();
+  final TextEditingController _passController = TextEditingController();
 
   final TextEditingController _searchController = TextEditingController();
-  final EmployeeService _employeeService = EmployeeService(); // EmployeeService instance
-
+  final EmployeeService _employeeService =
+      EmployeeService(); // EmployeeService instance
 
   final CollectionReference _items =
-  FirebaseFirestore.instance.collection('Employee');
+      FirebaseFirestore.instance.collection('Employee');
 
   String searchText = '';
 
@@ -46,15 +48,18 @@ class _EmployeeScreensState extends State<EmployeeScreens> {
               children: [
                 Center(
                   child: Text(
-                    'ຂໍ້ມູນພະນັກງານ', style: GoogleFonts.notoSansLao(
-                      fontSize: 18, fontWeight: FontWeight.w600, color: Colors.black45),),
+                    'ຂໍ້ມູນພະນັກງານ',
+                    style: GoogleFonts.notoSansLao(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black45),
+                  ),
                 ),
-
                 TextField(
                   controller: _nameController,
                   decoration: InputDecoration(
                     labelText: 'ຊື່', // Lao label text
-                    hintText: 'eg.Elon', // Hint text
+                    hintText: 'enter name', // Hint text
                     labelStyle: GoogleFonts.notoSansLao(
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
@@ -70,7 +75,7 @@ class _EmployeeScreensState extends State<EmployeeScreens> {
                   controller: _idController,
                   decoration: InputDecoration(
                     labelText: 'Id່', // Lao label text
-                    hintText: 'eg.Elon', // Hint text
+                    hintText: 'enter ID', // Hint text
                     labelStyle: GoogleFonts.notoSansLao(
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
@@ -86,7 +91,7 @@ class _EmployeeScreensState extends State<EmployeeScreens> {
                   controller: _passController,
                   decoration: InputDecoration(
                     labelText: 'Password', // Lao label text
-                    hintText: 'eg.Elon', // Hint text
+                    hintText: 'enter password', // Hint text
                     labelStyle: GoogleFonts.notoSansLao(
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
@@ -98,7 +103,6 @@ class _EmployeeScreensState extends State<EmployeeScreens> {
                     ),
                   ),
                 ),
-
                 const SizedBox(
                   height: 10,
                 ),
@@ -106,26 +110,23 @@ class _EmployeeScreensState extends State<EmployeeScreens> {
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     ElevatedButton(
-
                       onPressed: () async {
                         final String name = _nameController.text;
                         final String id = _idController.text;
                         final String pass = _passController.text;
 
-
                         if (name.isNotEmpty) {
                           await _items.add({
                             "name": name,
-                            "id":id,
-                            "password":pass,
-                            "dateOfBirth":'',
-                            "departmentId":'',
-                            "email":'',
-                            "phone":'',
-                            "positionId":'',
-                            "profileImage":'',
-                            "qualification":''
-
+                            "id": id,
+                            "password": pass,
+                            "dateOfBirth": '',
+                            "departmentId": '',
+                            "email": '',
+                            "phone": '',
+                            "positionId": '',
+                            "profileImage": '',
+                            "qualification": ''
                           });
                           _nameController.text = '';
                           _idController.text = '';
@@ -135,18 +136,29 @@ class _EmployeeScreensState extends State<EmployeeScreens> {
                         }
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue, // Button background color
-                        foregroundColor: Colors.white, // Text color
-                        shadowColor: Colors.blueAccent, // Shadow color
-                        elevation: 5, // Elevation (shadow depth)
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15), // Padding
+                        backgroundColor: Colors.blue,
+                        // Button background color
+                        foregroundColor: Colors.white,
+                        // Text color
+                        shadowColor: Colors.blueAccent,
+                        // Shadow color
+                        elevation: 5,
+                        // Elevation (shadow depth)
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 20, vertical: 15),
+                        // Padding
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10), // Rounded corners
+                          borderRadius:
+                              BorderRadius.circular(10), // Rounded corners
                         ),
                       ),
-                      child:Text(
-                        'ບັນທືກ', style: GoogleFonts.notoSansLao(
-                          fontSize: 18, fontWeight: FontWeight.w600, color: Colors.white),),
+                      child: Text(
+                        'ບັນທືກ',
+                        style: GoogleFonts.notoSansLao(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white),
+                      ),
                     ),
                   ],
                 )
@@ -160,8 +172,12 @@ class _EmployeeScreensState extends State<EmployeeScreens> {
   Future<void> _update(String? employeeId) async {
     if (employeeId != null) {
       // Fetch the document or use stored values
-      final snapshot = await FirebaseFirestore.instance.collection('Employee').doc(employeeId).get();
+      final snapshot = await FirebaseFirestore.instance
+          .collection('Employee')
+          .doc(employeeId)
+          .get();
       _nameController.text = snapshot['name'];
+      _idController.text = snapshot['id'];
     }
 
     await showModalBottomSheet(
@@ -193,7 +209,22 @@ class _EmployeeScreensState extends State<EmployeeScreens> {
                 controller: _nameController,
                 decoration: InputDecoration(
                   labelText: 'ຊື່',
-                  hintText: 'eg. Elon',
+                  hintText: 'Enter name',
+                  labelStyle: GoogleFonts.notoSansLao(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black45,
+                  ),
+                ),
+              ),
+              SizedBox(
+                height: 5,
+              ),
+              TextField(
+                controller: _idController,
+                decoration: InputDecoration(
+                  labelText: 'ID',
+                  hintText: 'Enter ID',
                   labelStyle: GoogleFonts.notoSansLao(
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
@@ -239,19 +270,10 @@ class _EmployeeScreensState extends State<EmployeeScreens> {
     );
   }
 
-
-
-
-  // Future<void> _delete(String employeeId) async {
-  //   await FirebaseFirestore.instance.collection('Employee').doc(employeeId).delete();
-  //
-  //   ScaffoldMessenger.of(context).showSnackBar(
-  //     const SnackBar(content: Text("You have successfully deleted the employee")),
-  //   );
-  // }
   void _delete(String employeeId) async {
     try {
-      await _employeeService.deleteEmployee(employeeId); // Delete employee by ID
+      await _employeeService
+          .deleteEmployee(employeeId); // Delete employee by ID
       print('Employee deleted successfully');
     } catch (e) {
       print('Error deleting employee: $e');
@@ -265,38 +287,43 @@ class _EmployeeScreensState extends State<EmployeeScreens> {
   }
 
   bool isSearchClicked = false;
-
+  final List<Color> colors = [
+    Color(0xFF5AD1fA),
+    Color(0xFF836FF0),
+    Color(0XFF1AC286),
+    Color(0XFFF984BC)
+  ];
 
   @override
   Widget build(BuildContext context) {
     final EmployeeService _employeeService = EmployeeService();
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Color(0xFFF193940),
+        backgroundColor: Color(0xFF577DF4),
         title: isSearchClicked
             ? Container(
-          height: 40,
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(10.0),
-          ),
-          child: TextField(
-            controller: _searchController,
-            onChanged: _onSearchChanged,
-            decoration: const InputDecoration(
-                contentPadding: EdgeInsets.fromLTRB(16, 20, 16, 12),
-                hintStyle: TextStyle(color: Colors.black),
-                border: InputBorder.none,
-                hintText: 'Search..'),
-          ),
-        )
+                height: 40,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(10.0),
+                ),
+                child: TextField(
+                  controller: _searchController,
+                  onChanged: _onSearchChanged,
+                  decoration: const InputDecoration(
+                      contentPadding: EdgeInsets.fromLTRB(16, 20, 16, 12),
+                      hintStyle: TextStyle(color: Colors.black),
+                      border: InputBorder.none,
+                      hintText: 'Search..'),
+                ),
+              )
             : Text(
-          'ຂໍ້ມູນພະນັກງານ',
-          style: GoogleFonts.notoSansLao(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-              color: Colors.white),
-        ),
+                'ຂໍ້ມູນພະນັກງານ',
+                style: GoogleFonts.notoSansLao(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white),
+              ),
         iconTheme: IconThemeData(color: Colors.white),
         centerTitle: true,
         actions: [
@@ -309,175 +336,267 @@ class _EmployeeScreensState extends State<EmployeeScreens> {
               icon: Icon(isSearchClicked ? Icons.close : Icons.search))
         ],
       ),
-
-
-      body: StreamBuilder<List<Employee>>(
-        stream: _employeeService.searchEmployees(searchText),
-    builder: (context, snapshot) {
-    if (snapshot.connectionState == ConnectionState.waiting) {
-    return Center(
-    child: LoadingAnimationWidget.threeArchedCircle(
-    color: Colors.white,
-    size: 100,
-    ),
-    );
-    }
-
-    if (snapshot.hasError) {
-    return Center(child: Text('Error: ${snapshot.error}'));
-    }
-
-    final List<Employee> employees = snapshot.data ?? [];
-
-    if (employees.isEmpty) {
-    return Center(child: Text('No items found.'));
-    }
-
-    return ListView.builder(
-    itemCount: employees.length,
-    itemBuilder: (context, index) {
-      final Employee employee = employees[index];
-
-      // Fetch department and position names
-      return FutureBuilder<Department?>(
-        future: _employeeService.getDepartment(employee.departmentId),
-        builder: (context, departmentSnapshot) {
-          if (departmentSnapshot.connectionState == ConnectionState.waiting) {
-            return Center(
-              child: LoadingAnimationWidget.staggeredDotsWave(
-                color: Colors.white,
-                size: 100,
-              ),
-            );
-          }
-
-          if (departmentSnapshot.hasError) {
-            return Text('Error: ${departmentSnapshot.error}');
-          }
-
-          final department = departmentSnapshot.data;
-
-          return FutureBuilder<Position?>(
-            future: _employeeService.getPosition(employee.positionId),
-            builder: (context, positionSnapshot) {
-              if (positionSnapshot.connectionState == ConnectionState.waiting) {
+      body: Padding(
+        padding: const EdgeInsets.all(10.0),
+        child: StreamBuilder<List<Employee>>(
+            stream: _employeeService.searchEmployees(searchText),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
                 return Center(
-                  child: LoadingAnimationWidget.staggeredDotsWave(
+                  child: LoadingAnimationWidget.threeArchedCircle(
                     color: Colors.white,
                     size: 100,
                   ),
                 );
               }
 
-              if (positionSnapshot.hasError) {
-                return Text('Error: ${positionSnapshot.error}');
+              if (snapshot.hasError) {
+                return Center(child: Text('Error: ${snapshot.error}'));
               }
 
-              final position = positionSnapshot.data;
+              final List<Employee> employees = snapshot.data ?? [];
 
-              return Card(
-                color: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(5),
-                ),
-                child: ListTile(
-                  leading: ClipRRect(
-                    borderRadius: BorderRadius.circular(100),
-                    child: Image.network(
-                      employee.profileImage.isEmpty
-                          ? 'https://gratisography.com/wp-content/uploads/2023/10/gratisography-cool-cat-800x525.jpg'
-                          : employee.profileImage,
-                      width: 70,
-                      height: 70,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return const Icon(Icons.error);
-                      },
-                    ),
-                  ),
-                  title: Text(employee.name),
-                  subtitle: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text("ພາກວິຊາ: ${department?.name ?? 'ບໍ່ມີຂໍໍໍມູນ'}",style: GoogleFonts.notoSansLao(
-                      fontSize: 15, ),),
-                      Text("ຕໍາແໜ່ງ: ${position?.name ?? 'ບໍ່ມີຂໍໍໍມູນ'}",style: GoogleFonts.notoSansLao(
-                        fontSize: 15, ),),
-                      Text("ວດປ: ${employee.dateOfBirth}",style: GoogleFonts.notoSansLao(
-                        fontSize: 15, ),),
-                      Text("ID: ${employee.employeeId}",style: GoogleFonts.notoSansLao(
-                        fontSize: 15, ),),
-                      Text("Password: ${employee.password}",style: GoogleFonts.notoSansLao(
-                        fontSize: 15, ),),
+              if (employees.isEmpty) {
+                return Center(child: Text('No items found.'));
+              }
 
-                      Text("ເບິໂທ: ${employee.phone}",style: GoogleFonts.notoSansLao(
-                        fontSize: 15, ),),
-                    ],
-                  ),
-                  trailing: SizedBox(
-                    width: 100,
-                    child: Row(
-                      children: [
-                        IconButton(
-                          color: Colors.orangeAccent,
-                          onPressed: () => _update(employee.id),
-                          icon: const Icon(Icons.edit),
-                        ),
-                        IconButton(
-                          color: Colors.redAccent,
-                          onPressed: () async {
-                            final result = await showOkCancelAlertDialog(
-                              context: context,
-                              message: 'ທ່ານຕ້ອງການລົບແທ້ບໍ່',
-                              okLabel: 'ຕົກລົງ',
-                              cancelLabel: 'ຍົກເລີກ',
-                            );
+              return ListView.builder(
+                  itemCount: employees.length,
+                  itemBuilder: (context, index) {
+                    final Employee employee = employees[index];
 
-                            if (result == OkCancelResult.ok) {
-                              _delete(employee.id); // Delete the employee document by ID
+                    // Fetch department and position names
+                    return FutureBuilder<Department?>(
+                      future:
+                          _employeeService.getDepartment(employee.departmentId),
+                      builder: (context, departmentSnapshot) {
+                        if (departmentSnapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return Center(
+                            child: LoadingAnimationWidget.staggeredDotsWave(
+                              color: Colors.white,
+                              size: 100,
+                            ),
+                          );
+                        }
+
+                        if (departmentSnapshot.hasError) {
+                          return Text('Error: ${departmentSnapshot.error}');
+                        }
+
+                        final department = departmentSnapshot.data;
+
+                        return FutureBuilder<Position?>(
+                          future:
+                              _employeeService.getPosition(employee.positionId),
+                          builder: (context, positionSnapshot) {
+                            if (positionSnapshot.connectionState ==
+                                ConnectionState.waiting) {
+                              return Center(
+                                child: LoadingAnimationWidget.staggeredDotsWave(
+                                  color: Colors.white,
+                                  size: 100,
+                                ),
+                              );
                             }
+
+                            if (positionSnapshot.hasError) {
+                              return Text('Error: ${positionSnapshot.error}');
+                            }
+
+                            final position = positionSnapshot.data;
+
+                            return Card(
+                                color: Colors.white,
+                                child: Row(children: [
+                                  Container(
+                                    decoration: BoxDecoration(
+                                        color: colors[index % colors.length],
+                                        borderRadius: BorderRadius.only(
+                                            topLeft: Radius.circular(12),
+                                            bottomLeft: Radius.circular(12))),
+                                    height: 290,
+                                    width: 20,
+                                  ),
+                                  Expanded(
+                                    child: ListTile(
+                                      leading: Container(
+                                        padding: EdgeInsets.all(2),
+                                        height: 70,
+                                        width: 70,
+                                        decoration: const BoxDecoration(
+                                          color: Color(0xFF577DF4),
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: Container(
+                                          padding: const EdgeInsets.all(8),
+                                          decoration: const BoxDecoration(
+                                            color: Colors.white,
+                                            shape: BoxShape.circle,
+                                          ),
+                                          child: ClipOval(
+                                            child: Container(
+                                              height: 250,
+                                              width: 250,
+                                              child: Image.network(
+                                                employee.profileImage.isEmpty
+                                                    ? 'https://gratisography.com/wp-content/uploads/2023/10/gratisography-cool-cat-800x525.jpg'
+                                                    : employee.profileImage,
+                                                fit: BoxFit.cover,
+                                                errorBuilder: (context, error,
+                                                    stackTrace) {
+                                                  return const Icon(
+                                                      Icons.error);
+                                                },
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      title: Text(employee.name),
+                                      subtitle: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            "ພາກວິຊາ: ${department?.name ?? 'ບໍ່ມີຂໍ້ມູນ'}",
+                                            style: GoogleFonts.notoSansLao(
+                                              fontSize: 15,
+                                            ),
+                                          ),
+                                          Text(
+                                            "ຕໍາແໜ່ງ: ${position?.name ?? 'ບໍ່ມີຂໍ້ມູນ'}",
+                                            style: GoogleFonts.notoSansLao(
+                                              fontSize: 15,
+                                            ),
+                                          ),
+                                          Text(
+                                            "ວດປ: ${employee.dateOfBirth}",
+                                            style: GoogleFonts.notoSansLao(
+                                              fontSize: 15,
+                                            ),
+                                          ),
+                                          Text(
+                                            "ID: ${employee.employeeId}",
+                                            style: GoogleFonts.notoSansLao(
+                                              fontSize: 15,
+                                            ),
+                                          ),
+                                          Text(
+                                            "Password: ${employee.password}",
+                                            style: GoogleFonts.notoSansLao(
+                                              fontSize: 15,
+                                            ),
+                                          ),
+                                          Text(
+                                            "ເບິໂທ: ${employee.phone}",
+                                            style: GoogleFonts.notoSansLao(
+                                              fontSize: 15,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      trailing: SizedBox(
+                                        width: 100,
+                                        child: Row(
+                                          children: [
+                                            IconButton(
+                                              color: Colors.orangeAccent,
+                                              onPressed: () =>
+                                                  _update(employee.id),
+                                              icon: const FaIcon(
+                                                  FontAwesomeIcons.penToSquare),
+                                            ),
+                                            IconButton(
+                                              color: Colors.redAccent,
+                                              onPressed: () async {
+                                                PanaraConfirmDialog
+                                                    .showAnimatedGrow(
+                                                  context,
+                                                  title: "!!!!...!!!!",
+                                                  message:
+                                                      "ທ່ານຕ້ອງການລົບແທ້ບໍ່.",
+                                                  confirmButtonText: "ຕົກລົງ",
+                                                  cancelButtonText: "ຍົກເລີກ",
+                                                  onTapCancel: () {
+                                                    Navigator.pop(context);
+                                                  },
+                                                  onTapConfirm: () {
+                                                    _delete(employee.id);
+                                                    Navigator.pop(context);
+                                                  },
+                                                  panaraDialogType:
+                                                      PanaraDialogType.success,
+                                                );
+                                              },
+                                              icon: const FaIcon(
+                                                  FontAwesomeIcons.trashCan),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ]));
                           },
-                          icon: const Icon(Icons.delete),
-                        ),
-
-                      ],
-                    ),
-                  ),
-                ),
-              );
-            },
-          );
-        },
-      );
-    }  );
-    }),
-
-
-
-
+                        );
+                      },
+                    );
+                  });
+            }),
+      ),
       floatingActionButton: SpeedDial(
-        icon: Icons.add,
-        backgroundColor: const Color.fromARGB(255, 88, 136, 190),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
+        animatedIconTheme: IconThemeData(size: 22.0),
+        curve: Curves.bounceIn,
+        overlayColor: Colors.white,
+        foregroundColor: Colors.white,
+        elevation: 15.0,
+        icon: Icons.menu,
+        activeIcon: Icons.close,
+        backgroundColor: const Color(0xFF577DF4),
         children: [
           SpeedDialChild(
               child: Icon(Icons.read_more, color: Colors.white),
-
               labelWidget: Text(
                 'ລາຍງານຂໍ້ມູນ',
-                style: GoogleFonts.notoSansLao(), // Applying Google Font to the label
+                style: GoogleFonts
+                    .notoSansLao(), // Applying Google Font to the label
               ),
-              onTap: () => {},
-              backgroundColor: Colors.yellow
-          ),
+              onTap: () async {
+                try {
+                  final DocumentSnapshot<Map<String, dynamic>> snapshot =
+                      await FirebaseFirestore.instance
+                          .collection('Employee')
+                          .doc('employeeid')
+                          .get();
+                  final docId = snapshot.id;
+
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ReportEmployee(
+                          docID:
+                              docId), // Ensure the constructor name is correct
+                    ),
+                  );
+                } catch (e) {
+                  print('Error fetching document: $e');
+                  // Handle error appropriately
+                }
+              },
+              backgroundColor: Colors.yellow),
           SpeedDialChild(
-            child: Icon(Icons.add_circle_outline, color: Colors.white),
+              child: Icon(Icons.add_circle_outline, color: Colors.white),
               labelWidget: Text(
                 'ເພີ່ມຂໍ້ມູນ',
-                style: GoogleFonts.notoSansLao(), // Applying Google Font to the label
+                style: GoogleFonts
+                    .notoSansLao(), // Applying Google Font to the label
               ),
-            onTap: () => _create(),
-            backgroundColor: Colors.blue
-          ),
+              onTap: () => _create(),
+              backgroundColor: Color(0xFF577DF4)),
         ],
       ),
     );

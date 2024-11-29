@@ -1,8 +1,11 @@
 import 'package:adaptive_dialog/adaptive_dialog.dart';
+import 'package:admin_timesabai/views/users_views/screens/department_screens/report_department.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:panara_dialogs/panara_dialogs.dart';
 
 class DepartmentScreens extends StatefulWidget {
   const DepartmentScreens({super.key});
@@ -12,6 +15,13 @@ class DepartmentScreens extends StatefulWidget {
 }
 
 class _DepartmentScreensState extends State<DepartmentScreens> {
+  final List<Color> colors = [
+    Color(0xFF5AD1fA),
+    Color(0xFF836FF0),
+    Color(0XFF1AC286),
+    Color(0XFFF984BC)
+  ];
+
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _searchController = TextEditingController();
 
@@ -36,12 +46,15 @@ class _DepartmentScreensState extends State<DepartmentScreens> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                 Center(
+                Center(
                   child: Text(
-                   'ຂໍ້ມູນພາກວິຊາ', style: GoogleFonts.notoSansLao(
-                        fontSize: 18, fontWeight: FontWeight.w600, color: Colors.black45),),
+                    'ຂໍ້ມູນພາກວິຊາ',
+                    style: GoogleFonts.notoSansLao(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black45),
                   ),
-
+                ),
                 TextField(
                   controller: _nameController,
                   decoration: InputDecoration(
@@ -58,7 +71,6 @@ class _DepartmentScreensState extends State<DepartmentScreens> {
                     ),
                   ),
                 ),
-
                 const SizedBox(
                   height: 10,
                 ),
@@ -66,28 +78,33 @@ class _DepartmentScreensState extends State<DepartmentScreens> {
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     ElevatedButton(
-
-                        onPressed: () async {
-                          final String name = _nameController.text;
-                          if (name.isNotEmpty) {
-                            await _items.add({"name": name});
-                            _nameController.text = '';
-                            Navigator.of(context).pop();
-                          }
-                        },
+                      onPressed: () async {
+                        final String name = _nameController.text;
+                        if (name.isNotEmpty) {
+                          await _items.add({"name": name});
+                          _nameController.text = '';
+                          Navigator.of(context).pop();
+                        }
+                      },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.blue, // Button background color
                         foregroundColor: Colors.white, // Text color
                         shadowColor: Colors.blueAccent, // Shadow color
                         elevation: 5, // Elevation (shadow depth)
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15), // Padding
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 20, vertical: 15), // Padding
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10), // Rounded corners
+                          borderRadius:
+                              BorderRadius.circular(10), // Rounded corners
                         ),
                       ),
-                        child:Text(
-                          'ບັນທືກ', style: GoogleFonts.notoSansLao(
-                            fontSize: 18, fontWeight: FontWeight.w600, color: Colors.white),),
+                      child: Text(
+                        'ບັນທືກ',
+                        style: GoogleFonts.notoSansLao(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white),
+                      ),
                     ),
                   ],
                 )
@@ -117,7 +134,7 @@ class _DepartmentScreensState extends State<DepartmentScreens> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Center(
-                  child:Text(
+                  child: Text(
                     'ຂໍ້ມູນພາກວີຊາ',
                     style: GoogleFonts.notoSansLao(
                         fontSize: 18,
@@ -126,41 +143,44 @@ class _DepartmentScreensState extends State<DepartmentScreens> {
                   ),
                 ),
                 TextField(
-                  controller: _nameController,
-                  decoration:  InputDecoration(
-          labelText: 'ຊື່', // Lao label text
-          hintText: 'eg.Elon', // Hint text
-          labelStyle: GoogleFonts.notoSansLao(
-          fontSize: 18,
-          fontWeight: FontWeight.w600,
-          color: Colors.black45,
-          ),
-                  )
-                ),
+                    controller: _nameController,
+                    decoration: InputDecoration(
+                      labelText: 'ຊື່', // Lao label text
+                      hintText: 'eg.Elon', // Hint text
+                      labelStyle: GoogleFonts.notoSansLao(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black45,
+                      ),
+                    )),
                 const SizedBox(
                   height: 20,
                 ),
                 ElevatedButton(
-                  style: ElevatedButton.styleFrom(elevation: 10,
+                  style: ElevatedButton.styleFrom(
+                      elevation: 10,
                       shape: new RoundedRectangleBorder(
                         borderRadius: new BorderRadius.circular(10.0),
                         side: BorderSide(color: Colors.red),
                       ),
-                      backgroundColor: Color.fromRGBO(214, 0, 27, 1)
+                      backgroundColor: Color.fromRGBO(214, 0, 27, 1)),
+                  onPressed: () async {
+                    final String name = _nameController.text;
+                    if (name.isNotEmpty) {
+                      await _items
+                          .doc(documentSnapshot!.id)
+                          .update({"name": name});
+                      _nameController.text = '';
+                      Navigator.of(context).pop();
+                    }
+                  },
+                  child: Text(
+                    'ແກ້ໄຂ',
+                    style: GoogleFonts.notoSansLao(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white),
                   ),
-                    onPressed: () async {
-                      final String name = _nameController.text;
-                      if (name.isNotEmpty) {
-                        await _items
-                            .doc(documentSnapshot!.id)
-                            .update({"name": name});
-                        _nameController.text = '';
-                        Navigator.of(context).pop();
-                      }
-                    },
-                  child:Text(
-                    'ແກ້ໄຂ', style: GoogleFonts.notoSansLao(
-                      fontSize: 18, fontWeight: FontWeight.w600, color: Colors.white),),
                 ),
               ],
             ),
@@ -173,8 +193,15 @@ class _DepartmentScreensState extends State<DepartmentScreens> {
     await _items.doc(productID).delete();
 
     // for snackBar
-    ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("You have successfully deleted an Department")));
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(
+      "ລົບຂໍ້ມູນພາກວິຊາສໍາເລັດ",
+      style: GoogleFonts.notoSansLao(
+        fontSize: 18,
+        fontWeight: FontWeight.w600,
+        color: Colors.white,
+      ),
+    )));
   }
 
   void _onSearchChanged(String value) {
@@ -187,132 +214,411 @@ class _DepartmentScreensState extends State<DepartmentScreens> {
 
   @override
   Widget build(BuildContext context) {
+    // return Scaffold(
+    //   appBar: AppBar(
+    //     backgroundColor: Color(0xFFF193940),
+    //     title: isSearchClicked
+    //         ? Container(
+    //             height: 40,
+    //             decoration: BoxDecoration(
+    //               color: Colors.white,
+    //               borderRadius: BorderRadius.circular(10.0),
+    //             ),
+    //             child: TextField(
+    //               controller: _searchController,
+    //               onChanged: _onSearchChanged,
+    //               decoration: const InputDecoration(
+    //                   contentPadding: EdgeInsets.fromLTRB(16, 20, 16, 12),
+    //                   hintStyle: TextStyle(color: Colors.black),
+    //                   border: InputBorder.none,
+    //                   hintText: 'Search..'),
+    //             ),
+    //           )
+    //         : Text(
+    //             'ຂໍ້ມູນພາກວີຊາ',
+    //             style: GoogleFonts.notoSansLao(
+    //                 fontSize: 18,
+    //                 fontWeight: FontWeight.w600,
+    //                 color: Colors.white),
+    //           ),
+    //     iconTheme: IconThemeData(color: Colors.white),
+    //     centerTitle: true,
+    //     actions: [
+    //       IconButton(
+    //           onPressed: () {
+    //             setState(() {
+    //               isSearchClicked = !isSearchClicked;
+    //             });
+    //           },
+    //           icon: Icon(isSearchClicked ? Icons.close : Icons.search))
+    //     ],
+    //   ),
+    //   body: StreamBuilder(
+    //     stream: _items.snapshots(),
+    //     builder: (context, AsyncSnapshot<QuerySnapshot> streamSnapshot) {
+    //       if (streamSnapshot.hasData) {
+    //         final List<DocumentSnapshot> items = streamSnapshot.data!.docs
+    //             .where((doc) => doc['name'].toLowerCase().contains(
+    //                   searchText.toLowerCase(),
+    //                 ))
+    //             .toList();
+    //         return ListView.builder(
+    //             itemCount: items.length,
+    //             itemBuilder: (context, index) {
+    //               final DocumentSnapshot documentSnapshot = items[index];
+    //               return Card(
+    //                   color: Colors.white,
+    //                   shape: RoundedRectangleBorder(
+    //                   borderRadius: BorderRadius.circular(5),
+    //               ),
+    //               margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+    //               child: Row(
+    //               crossAxisAlignment: CrossAxisAlignment
+    //                   .start,
+    //               children: [
+    //               Container(
+    //               height: 56, // Set a fixed height
+    //               width: 6,   // Set width for better visibility
+    //               color: colors[index % colors.length],
+    //               ),
+    //                     Expanded(
+    //                       child: ListTile(
+    //                         title: Text(
+    //                           documentSnapshot['name'],
+    //                           style: GoogleFonts.notoSansLao(
+    //                               fontSize: 18,
+    //                               fontWeight: FontWeight.w600,
+    //                               color: Colors.black),
+    //                         ),
+    //                         trailing: SizedBox(
+    //                           width: 100,
+    //                           child: Row(
+    //                             children: [
+    //                               IconButton(
+    //                                   color: Colors.orangeAccent,
+    //                                   onPressed: () => _update(documentSnapshot),
+    //                                   icon: const Icon(Icons.edit)),
+    //                               IconButton(
+    //                                 color: Colors.redAccent,
+    //                                 onPressed: () async {
+    //                                   final result = await showOkCancelAlertDialog(
+    //                                     context: context,
+    //                                     message: 'ທ່ານຕ້ອງການລົບແທ້ບໍ່',
+    //                                     okLabel: 'ຕົກລົງ',
+    //                                     cancelLabel: 'ຍົກເລີກ',
+    //
+    //                                   );
+    //
+    //                                   if (result == OkCancelResult.ok) {
+    //                                     _delete(documentSnapshot.id); // Perform delete action
+    //                                   }
+    //                                 },
+    //                                 icon: const Icon(Icons.delete),
+    //                               )
+    //                             ],
+    //                           ),
+    //                         ),
+    //                       ),
+    //                     ),
+    //                   ],
+    //                 )
+    //               );
+    //             });
+    //       }
+    //       return const Center(
+    //         child: CircularProgressIndicator(),
+    //       );
+    //     },
+    //   ),
+    //   floatingActionButton: SpeedDial(
+    //     icon: Icons.add,
+    //     backgroundColor: const Color.fromARGB(255, 88, 136, 190),
+    //     children: [
+    //       SpeedDialChild(
+    //           child: Icon(Icons.read_more, color: Colors.white),
+    //
+    //           labelWidget: Text(
+    //             'ລາຍງານຂໍ້ມູນ',
+    //             style: GoogleFonts.notoSansLao(), // Applying Google Font to the label
+    //           ),
+    //           onTap: () async {
+    //             try {
+    //               final DocumentSnapshot<Map<String, dynamic>> snapshot =
+    //               await FirebaseFirestore.instance
+    //                   .collection('Department')
+    //                   .doc('departmentid')
+    //                   .get();
+    //               final docId = snapshot.id;
+    //
+    //               Navigator.push(
+    //                 context,
+    //                 MaterialPageRoute(
+    //                   builder: (context) => ReportDepartment(docId: docId), // Ensure the constructor name is correct
+    //                 ),
+    //               );
+    //             } catch (e) {
+    //               print('Error fetching document: $e');
+    //               // Handle error appropriately
+    //             }
+    //           },
+    //           backgroundColor: Colors.yellow
+    //       ),
+    //       SpeedDialChild(
+    //           child: Icon(Icons.add_circle_outline, color: Colors.white),
+    //           labelWidget: Text(
+    //             'ເພີ່ມຂໍ້ມູນ',
+    //             style: GoogleFonts.notoSansLao(), // Applying Google Font to the label
+    //           ),
+    //           onTap: () => _create(),
+    //           backgroundColor: Colors.blue
+    //       ),
+    //     ],
+    //   ),
+    // );
+
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Color(0xFFF193940),
-        title: isSearchClicked
-            ? Container(
-                height: 40,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(10.0),
-                ),
-                child: TextField(
-                  controller: _searchController,
-                  onChanged: _onSearchChanged,
-                  decoration: const InputDecoration(
-                      contentPadding: EdgeInsets.fromLTRB(16, 20, 16, 12),
-                      hintStyle: TextStyle(color: Colors.black),
-                      border: InputBorder.none,
-                      hintText: 'Search..'),
-                ),
-              )
-            : Text(
-                'ຂໍ້ມູນພາກວີຊາ',
-                style: GoogleFonts.notoSansLao(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white),
-              ),
         iconTheme: IconThemeData(color: Colors.white),
-        centerTitle: true,
-        actions: [
-          IconButton(
-              onPressed: () {
-                setState(() {
-                  isSearchClicked = !isSearchClicked;
-                });
-              },
-              icon: Icon(isSearchClicked ? Icons.close : Icons.search))
-        ],
+        backgroundColor: Color(0xFF577DF4),
       ),
-      body: StreamBuilder(
-        stream: _items.snapshots(),
-        builder: (context, AsyncSnapshot<QuerySnapshot> streamSnapshot) {
-          if (streamSnapshot.hasData) {
-            final List<DocumentSnapshot> items = streamSnapshot.data!.docs
-                .where((doc) => doc['name'].toLowerCase().contains(
-                      searchText.toLowerCase(),
-                    ))
-                .toList();
-            return ListView.builder(
-                itemCount: items.length,
-                itemBuilder: (context, index) {
-                  final DocumentSnapshot documentSnapshot = items[index];
-                  return Card(
-                    color: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(5),
+      body: Container(
+        width: double.infinity,
+        decoration: const BoxDecoration(color: Color(0xFF577DF4)),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            isSearchClicked
+                ? Padding(
+                    padding: const EdgeInsets.all(10.0),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Container(
+                            height: 50,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(10.0),
+                            ),
+                            child: TextField(
+                              controller: _searchController,
+                              onChanged: _onSearchChanged,
+                              decoration: const InputDecoration(
+                                contentPadding:
+                                    EdgeInsets.fromLTRB(16, 0, 16, 0),
+                                hintStyle: TextStyle(color: Colors.black),
+                                border: InputBorder.none,
+                                hintText: 'Search..',
+                              ),
+                            ),
+                          ),
+                        ),
+                        IconButton(
+                          onPressed: () {
+                            setState(() {
+                              isSearchClicked = !isSearchClicked;
+                            });
+                          },
+                          icon: Icon(
+                            Icons.close,
+                            color: Colors.white,
+                            size: 30,
+                          ),
+                        ),
+                      ],
                     ),
-                    margin: const EdgeInsets.all(10),
-                    child: ListTile(
-                      title: Text(
-                        documentSnapshot['name'],
-                        style: GoogleFonts.notoSansLao(
+                  )
+                : Padding(
+                    padding: const EdgeInsets.all(10.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'ຂໍ້ມູນພາກວີຊາ',
+                          style: GoogleFonts.notoSansLao(
                             fontSize: 18,
                             fontWeight: FontWeight.w600,
-                            color: Colors.black),
-                      ),
-                      trailing: SizedBox(
-                        width: 100,
-                        child: Row(
-                          children: [
-                            IconButton(
-                                color: Colors.orangeAccent,
-                                onPressed: () => _update(documentSnapshot),
-                                icon: const Icon(Icons.edit)),
-                            IconButton(
-                              color: Colors.redAccent,
-                              onPressed: () async {
-                                final result = await showOkCancelAlertDialog(
-                                  context: context,
-                                  message: 'ທ່ານຕ້ອງການລົບແທ້ບໍ່',
-                                  okLabel: 'ຕົກລົງ',
-                                  cancelLabel: 'ຍົກເລີກ',
-
-                                );
-
-                                if (result == OkCancelResult.ok) {
-                                  _delete(documentSnapshot.id); // Perform delete action
-                                }
-                              },
-                              icon: const Icon(Icons.delete),
-                            )
-                          ],
+                            color: Colors.white,
+                          ),
                         ),
-                      ),
+                        IconButton(
+                          onPressed: () {
+                            setState(() {
+                              isSearchClicked = !isSearchClicked;
+                            });
+                          },
+                          icon:
+                              Icon(Icons.search, color: Colors.white, size: 40),
+                        ),
+                      ],
                     ),
-                  );
-                });
-          }
-          return const Center(
-            child: CircularProgressIndicator(),
-          );
-        },
+                  ),
+            Expanded(
+              child: Container(
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(20),
+                    topRight: Radius.circular(20),
+                  ),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: StreamBuilder(
+                    stream: _items.snapshots(),
+                    builder:
+                        (context, AsyncSnapshot<QuerySnapshot> streamSnapshot) {
+                      if (streamSnapshot.hasData) {
+                        final List<DocumentSnapshot> items = streamSnapshot
+                            .data!.docs
+                            .where((doc) => doc['name']
+                                .toLowerCase()
+                                .contains(searchText.toLowerCase()))
+                            .toList();
+                        return ListView.builder(
+                          itemCount: items.length,
+                          itemBuilder: (context, index) {
+                            final DocumentSnapshot documentSnapshot =
+                                items[index];
+                            return Card(
+                              color: Colors.white,
+
+                              child: Row(
+                                children: [
+                                  Container(
+                                    decoration: BoxDecoration(
+
+                                        color: colors[index % colors.length],
+                                        borderRadius: BorderRadius.only(topLeft: Radius.circular(12),
+                                            bottomLeft: Radius.circular(12))
+
+                                    ),
+                                    height: 72,
+                                    width: 15,
+                                  ),
+                                  Expanded(
+                                    child: ListTile(
+                                      title: Text(
+                                        documentSnapshot['name'],
+                                        style: GoogleFonts.notoSansLao(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.w600,
+                                            color: Colors.black),
+                                      ),
+                                      trailing: SizedBox(
+                                        width: 100,
+                                        child: Row(
+                                          children: [
+                                            IconButton(
+                                              color: Colors.orangeAccent,
+                                              onPressed: () =>
+                                                  _update(documentSnapshot),
+                                              icon: const FaIcon(FontAwesomeIcons.penToSquare),
+
+                                            ),
+                                            IconButton(
+                                              color: Colors.redAccent,
+                                              onPressed: () async {
+                                              //   final result =
+                                              //       await showOkCancelAlertDialog(
+                                              //     context: context,
+                                              //     message:
+                                              //         'ທ່ານຕ້ອງການລົບແທ້ບໍ່',
+                                              //     okLabel: 'ຕົກລົງ',
+                                              //     cancelLabel: 'ຍົກເລີກ',
+                                              //   );
+                                              //   if (result ==
+                                              //       OkCancelResult.ok) {
+                                              //     _delete(documentSnapshot.id);
+                                              //   }
+                                              // },
+                                                PanaraConfirmDialog.showAnimatedGrow(
+                                                  context,
+                                                  color: Colors.blue,
+                                                  title: "!!!!...!!!!",
+                                                  message: "ທ່ານຕ້ອງການລົບແທ້ບໍ່.",
+                                                  confirmButtonText: "ຕົກລົງ",
+                                                  cancelButtonText: "ຍົກເລີກ",
+                                                  onTapCancel: () {
+                                                    Navigator.pop(context);
+                                                  },
+                                                  onTapConfirm: () {
+
+                                                    _delete(documentSnapshot.id); // Call the delete method directly
+                                                    Navigator.pop(context); // Ensure to close the dialog after confirmation
+
+                                                  },
+                                                  panaraDialogType: PanaraDialogType.success,
+                                                );
+                                              },
+                                              icon: const FaIcon(FontAwesomeIcons.trashCan),
+                                            )
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        );
+                      }
+                      return const Center(child: CircularProgressIndicator());
+                    },
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
       floatingActionButton: SpeedDial(
-        icon: Icons.add,
-        backgroundColor: const Color.fromARGB(255, 88, 136, 190),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
+        animatedIconTheme: IconThemeData(size: 22.0),
+        curve: Curves.bounceIn,
+        overlayColor: Colors.white,
+        foregroundColor: Colors.white,
+        elevation: 15.0,
+        icon: Icons.menu,
+        activeIcon: Icons.close,
+        backgroundColor: const Color(0xFF577DF4),
         children: [
           SpeedDialChild(
-              child: Icon(Icons.read_more, color: Colors.white),
-
-              labelWidget: Text(
-                'ລາຍງານຂໍ້ມູນ',
-                style: GoogleFonts.notoSansLao(), // Applying Google Font to the label
-              ),
-              onTap: () => {},
-              backgroundColor: Colors.yellow
+            child: Icon(Icons.read_more, color: Colors.white),
+            labelWidget: Text(
+              'ລາຍງານຂໍ້ມູນ',
+              style: GoogleFonts.notoSansLao(),
+            ),
+            onTap: () async {
+              try {
+                final DocumentSnapshot<Map<String, dynamic>> snapshot =
+                    await FirebaseFirestore.instance
+                        .collection('Department')
+                        .doc('departmentid')
+                        .get();
+                final docId = snapshot.id;
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ReportDepartment(docId: docId),
+                  ),
+                );
+              } catch (e) {
+                print('Error fetching document: $e');
+              }
+            },
+            backgroundColor: Colors.yellow,
           ),
           SpeedDialChild(
               child: Icon(Icons.add_circle_outline, color: Colors.white),
               labelWidget: Text(
                 'ເພີ່ມຂໍ້ມູນ',
-                style: GoogleFonts.notoSansLao(), // Applying Google Font to the label
+                style: GoogleFonts.notoSansLao(),
               ),
-              onTap: () => _create(),
-              backgroundColor: Colors.blue
-          ),
+              onTap: _create,
+              backgroundColor: Color(0xFF577DF4)),
         ],
       ),
     );

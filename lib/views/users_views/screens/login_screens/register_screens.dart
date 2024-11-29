@@ -140,12 +140,12 @@ class _RegisterState extends State<Register> {
                             ),
                           ),
                           validator: (value) {
-                            RegExp regex = new RegExp(r'^.{6,}$');
+                            RegExp regex = new RegExp(r'^.{5,}$');
                             if (value!.isEmpty) {
                               return "Password cannot be empty";
                             }
                             if (!regex.hasMatch(value)) {
-                              return ("please enter valid password min. 6 character");
+                              return ("please enter valid password min. 5 character");
                             } else {
                               return null;
                             }

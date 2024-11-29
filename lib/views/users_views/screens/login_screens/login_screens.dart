@@ -5,8 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../home_screens/home_screens.dart';
-import '../record_screens/record_screens.dart';
-
+import '../leave_screens/employee_levae_screen.dart';
 
 
 class LoginPage extends StatefulWidget {
@@ -122,12 +121,12 @@ class _LoginPageState extends State<LoginPage> {
                             ),
                           ),
                           validator: (value) {
-                            RegExp regex = new RegExp(r'^.{6,}$');
+                            RegExp regex = new RegExp(r'^.{5,}$');
                             if (value!.isEmpty) {
                               return "Password cannot be empty";
                             }
                             if (!regex.hasMatch(value)) {
-                              return ("please enter valid password min. 6 character");
+                              return ("please enter valid password min. 5 character");
                             } else {
                               return null;
                             }
@@ -272,7 +271,7 @@ class _LoginPageState extends State<LoginPage> {
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
-              builder: (context) =>  RecordScreens(),
+              builder: (context) =>  EmployeeLeaveSerceen(),
             ),
           );
         }else{
