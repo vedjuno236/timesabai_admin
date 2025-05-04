@@ -149,17 +149,24 @@ class _ReportEmployeeState extends State<ReportDayLeave> {
                         ),
                       ),
                       pw.Text(
-                        '  ມະຫາວິທະຍາໄລສຸພານຸວົງ ຄະນະວິສະວະກໍາສາດ',
+                        '  ມະຫາວິທະຍາໄລສຸພານຸວົງ ',
                         style: pw.TextStyle(
                           font: font1,
                           fontSize: 25,
                         ),
                       ),
                       pw.Text(
+                        '  ຄະນະວິສະວະກໍາສາດ',
+                        style: pw.TextStyle(
+                          font: font1,
+                          fontSize: 20,
+                        ),
+                      ),
+                      pw.Text(
                         ' ລາຍງານຂໍ້ມູນການລາພັກ',
                         style: pw.TextStyle(
                           font: font1,
-                          fontSize: 25,
+                          fontSize: 18,
                         ),
                       ),
                       pw.Container(
@@ -205,7 +212,7 @@ class _ReportEmployeeState extends State<ReportDayLeave> {
                     cellAlignment: pw.Alignment.center,
                     headerStyle: pw.TextStyle(
                       font: font1, // Use bold font for headers
-                      fontSize: 15,
+                      fontSize: 10,
                     ),
                     headers: [
                       'ຊື່ ແລະ ນາມສະກຸນ',

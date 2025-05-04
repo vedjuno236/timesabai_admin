@@ -13,7 +13,11 @@ class ReportDayRecord extends StatefulWidget {
   final String searchStatus;
   final DateTime? dayDate;
 
-  const ReportDayRecord({super.key, required this.searchName, required this.searchStatus,required this.dayDate});
+  const ReportDayRecord(
+      {super.key,
+      required this.searchName,
+      required this.searchStatus,
+      required this.dayDate});
 
   @override
   State<ReportDayRecord> createState() => _ReportEmployeeState();
@@ -34,82 +38,82 @@ class _ReportEmployeeState extends State<ReportDayRecord> {
     final doc = pw.Document(pageMode: PdfPageMode.outlines);
 
     // Load custom font for the PDF
-    final font1 = pw.Font.ttf(await rootBundle.load('assets/fonts/BoonHome-400.ttf'));
+    final font1 =
+        pw.Font.ttf(await rootBundle.load('assets/fonts/BoonHome-400.ttf'));
 
     // Fetch employees from Firestore
-    final QuerySnapshot employeeSnapshot = await FirebaseFirestore.instance
-        .collection('Employee').get();
+    final QuerySnapshot employeeSnapshot =
+        await FirebaseFirestore.instance.collection('Employee').get();
 
     List<Map<String, dynamic>> employeeData = [];
+
+    // Get the date to filter (current date or widget.dayDate)
+    final targetDate = widget.dayDate ?? DateTime.now();
+    final formattedTargetDate = DateFormat.MMMMEEEEd().format(targetDate);
 
     // Loop through each employee document
     for (var employeeDoc in employeeSnapshot.docs) {
       final employeeDataMap = employeeDoc.data() as Map<String, dynamic>;
+      final employeeName = employeeDataMap['name'] ?? 'ບໍ່ມີຂໍ້ມູນ';
 
-      // Fetch employee name
-      final employeeName = employeeDataMap['name'] ?? 'ບໍມີຂໍໍມູນ';
+      // Check if we're searching by name
+      if (widget.searchName.isNotEmpty && employeeName != widget.searchName) {
+        continue; // Skip if name doesn't match
+      }
 
-      // Fetch employee records from the 'Record' subcollection
+      // Fetch employee records from the 'Record' subcollection for the target date
       final recordSnapshot = await employeeDoc.reference
           .collection('Record')
+          .where('date',
+              isGreaterThanOrEqualTo: Timestamp.fromDate(
+                  DateTime(targetDate.year, targetDate.month, targetDate.day)))
+          .where('date',
+              isLessThan: Timestamp.fromDate(DateTime(
+                  targetDate.year, targetDate.month, targetDate.day + 1)))
           .get();
 
-      // Loop through each record and filter based on search conditions
+      bool hasRecord = false;
+
+      // Loop through records to find matching date and status
       for (var recordDoc in recordSnapshot.docs) {
         final recordData = recordDoc.data() as Map<String, dynamic>;
+        final checkInTime = recordData['checkIn'] ?? 'ບໍ່ມີຂໍ້ມູນ';
+        final checkOutTime = recordData['checkOut'] ?? 'ບໍ່ມີຂໍ້ມູນ';
+        final status = recordData['status'] ?? 'ບໍ່ມີຂໍ້ມູນ';
 
-        final checkInTime = recordData['checkIn'] ?? 'ບໍມີຂໍໍມູນ';
-        final checkOutTime = recordData['checkOut'] ?? 'ບໍມີຂໍໍມູນ';
-        final status = recordData['status'] ?? 'ບໍມີຂໍໍມູນ';
-
-        bool matchesName = true; // Flag for matching name
-        bool matchesStatus = true; // Flag for matching status
-
-        // Check if we're searching by name
-        if (widget.searchName.isNotEmpty && employeeName != widget.searchName) {
-          matchesName = false; // Exclude this record if the name doesn't match
-        }
-
-        // Check if we're searching by status
+        // Check if status matches search criteria
         if (widget.searchStatus.isNotEmpty && status != widget.searchStatus) {
-          matchesStatus = false; // Exclude this record if the status doesn't match
+          continue; // Skip if status doesn't match
         }
 
-        // Include the record if it matches either the name or the status
-        if (matchesName || matchesStatus) {
-          Timestamp? date = recordData['date'];
-          if (date != null) {
-            DateTime recordDate = date.toDate();
+        hasRecord = true;
 
-            // If searching by monthDate, exclude records not in that month
-            if (widget.dayDate != null) {
-              if (recordDate.year != widget.dayDate!.year || recordDate.month != widget.dayDate!.month  || recordDate.day!= widget.dayDate!.day) {
-                continue; // Skip this record if it's not in the selected month
-              }
-            }
-          }
+        // Add record data
+        employeeData.add({
+          'name': employeeName,
+          'checkIn': checkInTime,
+          'checkOut': checkOutTime,
+          'status': status,
+          'date': formattedTargetDate,
+        });
+      }
 
-          // Convert Firestore timestamp to string
-          String formattedDate = date != null
-              ? DateFormat.MMMMEEEEd().format(date.toDate())
-              : 'ບໍມີຂໍໍມູນ';
-
-          // Add filtered data to employeeData
+      if (!hasRecord) {
+        // Only add the employee if searchStatus is empty or matches "ຂາດວຽກ"
+        if (widget.searchStatus.isEmpty || widget.searchStatus == 'ຂາດວຽກ') {
           employeeData.add({
             'name': employeeName,
-            'checkIn': checkInTime,
-            'checkOut': checkOutTime,
-            'status': status,
-            'date': formattedDate,
+            'checkIn': '----/----',
+            'checkOut': '----/----',
+            'status': 'ຂາດວຽກ',
+            'date': formattedTargetDate,
           });
         }
       }
     }
 
-
-
-    Uint8List logoData = (await rootBundle.load('assets/icons/images.png'))
-        .buffer.asUint8List();
+    Uint8List logoData =
+        (await rootBundle.load('assets/icons/images.png')).buffer.asUint8List();
     doc.addPage(
       pw.Page(
         pageTheme: pw.PageTheme(
@@ -145,17 +149,24 @@ class _ReportEmployeeState extends State<ReportDayRecord> {
                         ),
                       ),
                       pw.Text(
-                        '  ມະຫາວິທະຍາໄລສຸພານຸວົງ ຄະນະວິສະວະກໍາສາດ',
+                        '  ມະຫາວິທະຍາໄລສຸພານຸວົງ ',
                         style: pw.TextStyle(
                           font: font1,
                           fontSize: 25,
                         ),
                       ),
                       pw.Text(
+                        '  ຄະນະວິສະວະກໍາສາດ',
+                        style: pw.TextStyle(
+                          font: font1,
+                          fontSize: 20,
+                        ),
+                      ),
+                      pw.Text(
                         ' ລາຍງານຂໍ້ມູນປະຈໍາການ',
                         style: pw.TextStyle(
                           font: font1,
-                          fontSize: 25,
+                          fontSize: 18,
                         ),
                       ),
                       pw.Container(
@@ -168,11 +179,10 @@ class _ReportEmployeeState extends State<ReportDayRecord> {
                           ),
                         ),
                       ),
-                      // Update the following fields accordingly
                       pw.Container(
                         alignment: pw.Alignment.centerLeft,
                         child: pw.Text(
-                          'ລາຍງານປະຈໍາເດືອນ:  ${widget.dayDate != null ? DateFormat('dd MMMM ','lo').format(widget.dayDate!) : ''}', // Add appropriate value if needed
+                          'ລາຍງານປະຈໍາເດືອນ: ${DateFormat('dd MMMM ', 'lo').format(targetDate)}',
                           style: pw.TextStyle(
                             font: font1,
                             fontSize: 15,
@@ -182,7 +192,7 @@ class _ReportEmployeeState extends State<ReportDayRecord> {
                       pw.Container(
                         alignment: pw.Alignment.centerLeft,
                         child: pw.Text(
-                          'ລາຍງານມາປະຈໍາການ: ${widget.searchName}', // Add appropriate value if needed
+                          'ລາຍງານມາປະຈໍາການ: ${widget.searchName.isEmpty ? 'ທັງໝົດ' : widget.searchName}',
                           style: pw.TextStyle(
                             font: font1,
                             fontSize: 12,
@@ -192,7 +202,7 @@ class _ReportEmployeeState extends State<ReportDayRecord> {
                       pw.Container(
                         alignment: pw.Alignment.centerLeft,
                         child: pw.Text(
-                          'ລາຍງານສະຖານະ: ${widget.searchStatus}', // Add appropriate value if needed
+                          'ລາຍງານສະຖານະ: ${widget.searchStatus.isEmpty ? 'ທັງໝົດ' : widget.searchStatus}',
                           style: pw.TextStyle(
                             font: font1,
                             fontSize: 15,
@@ -203,24 +213,114 @@ class _ReportEmployeeState extends State<ReportDayRecord> {
                   ),
                 ),
                 pw.SizedBox(height: 20),
-                // Table displaying employee data including checkIn and checkOut times
+                // Table displaying employee data with conditional status color
                 pw.Center(
-                  child: pw.Table.fromTextArray(
-                    context: context,
-                    cellAlignment: pw.Alignment.center,
-                    headerStyle: pw.TextStyle(
-                      font: font1, // Use bold font for headers
-                      fontSize: 20,
-                    ),
-                    headers: ['ຊື່ ແລະ ນາມສະກຸນ','ວັນທີ /ເດືອນ', 'ເຂົ້າວຽກ', 'ອອກວຽກ', 'ສະຖານະ'],
-                    data: employeeData.map((entry) =>
-                    [
-                      entry['name'].toString(),
-                      entry['date'].toString(),
-                      entry['checkIn'].toString(), // Display check-in time
-                      entry['checkOut'].toString(), // Display check-out time
-                      entry['status'].toString(), // Display status
-                    ]).toList(),
+                  child: pw.Table(
+                    border: pw.TableBorder.all(),
+                    defaultColumnWidth: pw.IntrinsicColumnWidth(),
+                    defaultVerticalAlignment:
+                        pw.TableCellVerticalAlignment.middle,
+                    children: [
+                      // Header row
+                      pw.TableRow(
+                        decoration: pw.BoxDecoration(color: PdfColors.grey200),
+                        children: [
+                          pw.Padding(
+                            padding: const pw.EdgeInsets.all(8),
+                            child: pw.Text(
+                              'ຊື່ ແລະ ນາມສະກຸນ',
+                              style: pw.TextStyle(font: font1, fontSize: 10),
+                              textAlign: pw.TextAlign.center,
+                            ),
+                          ),
+                          pw.Padding(
+                            padding: const pw.EdgeInsets.all(8),
+                            child: pw.Text(
+                              'ວັນທີ /ເດືອນ',
+                              style: pw.TextStyle(font: font1, fontSize: 10),
+                              textAlign: pw.TextAlign.center,
+                            ),
+                          ),
+                          pw.Padding(
+                            padding: const pw.EdgeInsets.all(8),
+                            child: pw.Text(
+                              'ເຂົ້າວຽກ',
+                              style: pw.TextStyle(font: font1, fontSize: 10),
+                              textAlign: pw.TextAlign.center,
+                            ),
+                          ),
+                          pw.Padding(
+                            padding: const pw.EdgeInsets.all(8),
+                            child: pw.Text(
+                              'ອອກວຽກ',
+                              style: pw.TextStyle(font: font1, fontSize: 10),
+                              textAlign: pw.TextAlign.center,
+                            ),
+                          ),
+                          pw.Padding(
+                            padding: const pw.EdgeInsets.all(8),
+                            child: pw.Text(
+                              'ສະຖານະ',
+                              style: pw.TextStyle(font: font1, fontSize: 10),
+                              textAlign: pw.TextAlign.center,
+                            ),
+                          ),
+                        ],
+                      ),
+                      // Data rows
+                      ...employeeData.map(
+                        (entry) => pw.TableRow(
+                          children: [
+                            pw.Padding(
+                              padding: const pw.EdgeInsets.all(8),
+                              child: pw.Text(
+                                entry['name'].toString(),
+                                style: pw.TextStyle(font: font1, fontSize: 10),
+                                textAlign: pw.TextAlign.center,
+                              ),
+                            ),
+                            pw.Padding(
+                              padding: const pw.EdgeInsets.all(8),
+                              child: pw.Text(
+                                entry['date'].toString(),
+                                style: pw.TextStyle(font: font1, fontSize: 10),
+                                textAlign: pw.TextAlign.center,
+                              ),
+                            ),
+                            pw.Padding(
+                              padding: const pw.EdgeInsets.all(8),
+                              child: pw.Text(
+                                entry['checkIn'].toString(),
+                                style: pw.TextStyle(font: font1, fontSize: 10),
+                                textAlign: pw.TextAlign.center,
+                              ),
+                            ),
+                            pw.Padding(
+                              padding: const pw.EdgeInsets.all(8),
+                              child: pw.Text(
+                                entry['checkOut'].toString(),
+                                style: pw.TextStyle(font: font1, fontSize: 10),
+                                textAlign: pw.TextAlign.center,
+                              ),
+                            ),
+                            pw.Padding(
+                              padding: const pw.EdgeInsets.all(8),
+                              child: pw.Text(
+                                entry['status'].toString(),
+                                style: pw.TextStyle(
+                                  font: font1,
+                                  fontSize: 10,
+                                  color: entry['status'] == 'ຂາດວຽກ'
+                                      ? PdfColors.red
+                                      : PdfColors.black,
+                                ),
+                                textAlign: pw.TextAlign.center,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],

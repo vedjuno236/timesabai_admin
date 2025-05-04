@@ -214,156 +214,6 @@ class _PositionScreensState extends State<PositionScreens> {
 
   @override
   Widget build(BuildContext context) {
-    // return Scaffold(
-    //   appBar: AppBar(
-    //     backgroundColor: Color(0xFFF193940),
-    //     title: isSearchClicked
-    //         ? Container(
-    //       height: 40,
-    //       decoration: BoxDecoration(
-    //         color: Colors.white,
-    //         borderRadius: BorderRadius.circular(10.0),
-    //       ),
-    //       child: TextField(
-    //         controller: _searchController,
-    //         onChanged: _onSearchChanged,
-    //         decoration: const InputDecoration(
-    //             contentPadding: EdgeInsets.fromLTRB(16, 20, 16, 12),
-    //             hintStyle: TextStyle(color: Colors.black),
-    //             border: InputBorder.none,
-    //             hintText: 'Search..'),
-    //       ),
-    //     )
-    //         : Text(
-    //       'ຂໍ້ມູນຕໍາແໜ່ງ',
-    //       style: GoogleFonts.notoSansLao(
-    //           fontSize: 18,
-    //           fontWeight: FontWeight.w600,
-    //           color: Colors.white),
-    //     ),
-    //     iconTheme: IconThemeData(color: Colors.white),
-    //     centerTitle: true,
-    //     actions: [
-    //       IconButton(
-    //           onPressed: () {
-    //             setState(() {
-    //               isSearchClicked = !isSearchClicked;
-    //             });
-    //           },
-    //           icon: Icon(isSearchClicked ? Icons.close : Icons.search))
-    //     ],
-    //   ),
-    //   body: StreamBuilder(
-    //     stream: _items.snapshots(),
-    //     builder: (context, AsyncSnapshot<QuerySnapshot> streamSnapshot) {
-    //       if (streamSnapshot.hasData) {
-    //         final List<DocumentSnapshot> items = streamSnapshot.data!.docs
-    //             .where((doc) => doc['name'].toLowerCase().contains(
-    //           searchText.toLowerCase(),
-    //         ))
-    //             .toList();
-    //         return ListView.builder(
-    //             itemCount: items.length,
-    //             itemBuilder: (context, index) {
-    //               final DocumentSnapshot documentSnapshot = items[index];
-    //               return Card(
-    //                 color: Colors.white,
-    //                 shape: RoundedRectangleBorder(
-    //                   borderRadius: BorderRadius.circular(5),
-    //                 ),
-    //                 margin: const EdgeInsets.all(10),
-    //                 child: ListTile(
-    //                   title: Text(
-    //                     documentSnapshot['name'],
-    //                     style: GoogleFonts.notoSansLao(
-    //                         fontSize: 18,
-    //                         fontWeight: FontWeight.w600,
-    //                         color: Colors.black),
-    //                   ),
-    //                   trailing: SizedBox(
-    //                     width: 100,
-    //                     child: Row(
-    //                       children: [
-    //                         IconButton(
-    //                             color: Colors.orangeAccent,
-    //                             onPressed: () => _update(documentSnapshot),
-    //                             icon: const Icon(Icons.edit)),
-    //                         IconButton(
-    //                           color: Colors.redAccent,
-    //                           onPressed: () async {
-    //                             final result = await showOkCancelAlertDialog(
-    //                               context: context,
-    //                               message: 'ທ່ານຕ້ອງການລົບແທ້ບໍ່',
-    //                               okLabel: 'ຕົກລົງ',
-    //                               cancelLabel: 'ຍົກເລີກ',
-    //
-    //                             );
-    //
-    //                             if (result == OkCancelResult.ok) {
-    //                               _delete(documentSnapshot.id); // Perform delete action
-    //                             }
-    //                           },
-    //                           icon: const Icon(Icons.delete),
-    //                         )
-    //                       ],
-    //                     ),
-    //                   ),
-    //                 ),
-    //               );
-    //             });
-    //       }
-    //       return const Center(
-    //         child: CircularProgressIndicator(),
-    //       );
-    //     },
-    //   ),
-    //
-    //   floatingActionButton: SpeedDial(
-    //     icon: Icons.add,
-    //     backgroundColor: const Color.fromARGB(255, 88, 136, 190),
-    //     children: [
-    //       SpeedDialChild(
-    //           child: Icon(Icons.read_more, color: Colors.white),
-    //
-    //           labelWidget: Text(
-    //             'ລາຍງານຂໍ້ມູນ',
-    //             style: GoogleFonts.notoSansLao(), // Applying Google Font to the label
-    //           ),
-    //           onTap: () async {
-    //             try {
-    //               final DocumentSnapshot<Map<String, dynamic>> snapshot =
-    //               await FirebaseFirestore.instance
-    //                   .collection('Department')
-    //                   .doc('departmentid')
-    //                   .get();
-    //               final docId = snapshot.id;
-    //
-    //               Navigator.push(
-    //                 context,
-    //                 MaterialPageRoute(
-    //                   builder: (context) =>ReportPosittion(docId: docId), // Ensure the constructor name is correct
-    //                 ),
-    //               );
-    //             } catch (e) {
-    //               print('Error fetching document: $e');
-    //               // Handle error appropriately
-    //             }
-    //           },
-    //           backgroundColor: Colors.yellow
-    //       ),
-    //       SpeedDialChild(
-    //           child: Icon(Icons.add_circle_outline, color: Colors.white),
-    //           labelWidget: Text(
-    //             'ເພີ່ມຂໍ້ມູນ',
-    //             style: GoogleFonts.notoSansLao(), // Applying Google Font to the label
-    //           ),
-    //           onTap: () => _create(),
-    //           backgroundColor: Colors.blue
-    //       ),
-    //     ],
-    //   ),
-    // );
-
     return Scaffold(
       appBar: AppBar(
         iconTheme: IconThemeData(color: Colors.white),
@@ -468,74 +318,76 @@ class _PositionScreensState extends State<PositionScreens> {
                             final DocumentSnapshot documentSnapshot =
                                 items[index];
                             return Card(
-                              color: Colors.white,
-
+                              elevation: 0,
+                              color: Colors.grey.withOpacity(0.1),
                               child: Row(
                                 children: [
                                   Container(
                                     decoration: BoxDecoration(
-
                                         color: colors[index % colors.length],
-                                        borderRadius: BorderRadius.only(topLeft: Radius.circular(12),
-                                            bottomLeft: Radius.circular(12))
-
-                                    ),
+                                        borderRadius: BorderRadius.only(
+                                            topLeft: Radius.circular(12),
+                                            bottomLeft: Radius.circular(12))),
                                     height: 72,
                                     width: 15,
                                   ),
-                                    Expanded(
-                                      child: ListTile(
-                                        title: Text(
-                                          documentSnapshot['name'],
-                                          style: GoogleFonts.notoSansLao(
-                                              fontSize: 18,
-                                              fontWeight: FontWeight.w600,
-                                              color: Colors.black),
-                                        ),
-                                        trailing: SizedBox(
-                                          width: 100,
-                                          child: Row(
-                                            children: [
-                                              IconButton(
-                                                color: Colors.orangeAccent,
-                                                onPressed: () =>
-                                                    _update(documentSnapshot),
-                                                icon: const FaIcon(FontAwesomeIcons.penToSquare),
-
-                                              ),
-                                              IconButton(
-                                                color: Colors.redAccent,
-                                                onPressed: () async {
-                                                  PanaraConfirmDialog.showAnimatedGrow(
-                                                    context,
-                                                    color: Colors.blue,
-                                                    title: "!!!!...!!!!",
-                                                    message: "ທ່ານຕ້ອງການລົບແທ້ບໍ່.",
-                                                    confirmButtonText: "ຕົກລົງ",
-                                                    cancelButtonText: "ຍົກເລີກ",
-                                                    onTapCancel: () {
-                                                      Navigator.pop(context);
-                                                    },
-                                                    onTapConfirm: () {
-
-                                                      _delete(documentSnapshot.id); // Call the delete method directly
-                                                      Navigator.pop(context); // Ensure to close the dialog after confirmation
-
-                                                    },
-                                                    panaraDialogType: PanaraDialogType.success,
-                                                  );
-                                                },
-                                                icon: const FaIcon(FontAwesomeIcons.trashCan),
-                                              )
-                                            ],
-                                          ),
+                                  Expanded(
+                                    child: ListTile(
+                                      title: Text(
+                                        documentSnapshot['name'],
+                                        style: GoogleFonts.notoSansLao(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.w600,
+                                            color: Colors.black),
+                                      ),
+                                      trailing: SizedBox(
+                                        width: 100,
+                                        child: Row(
+                                          children: [
+                                            IconButton(
+                                              color: Colors.orangeAccent,
+                                              onPressed: () =>
+                                                  _update(documentSnapshot),
+                                              icon: const FaIcon(
+                                                  FontAwesomeIcons.penToSquare),
+                                            ),
+                                            IconButton(
+                                              color: Colors.redAccent,
+                                              onPressed: () async {
+                                                PanaraConfirmDialog
+                                                    .showAnimatedGrow(
+                                                  context,
+                                                  color: Colors.blue,
+                                                  title: "!!!!...!!!!",
+                                                  message:
+                                                      "ທ່ານຕ້ອງການລົບແທ້ບໍ່.",
+                                                  confirmButtonText: "ຕົກລົງ",
+                                                  cancelButtonText: "ຍົກເລີກ",
+                                                  onTapCancel: () {
+                                                    Navigator.pop(context);
+                                                  },
+                                                  onTapConfirm: () {
+                                                    _delete(documentSnapshot
+                                                        .id); // Call the delete method directly
+                                                    Navigator.pop(
+                                                        context); // Ensure to close the dialog after confirmation
+                                                  },
+                                                  panaraDialogType:
+                                                      PanaraDialogType.success,
+                                                );
+                                              },
+                                              icon: const FaIcon(
+                                                  FontAwesomeIcons.trashCan),
+                                            )
+                                          ],
                                         ),
                                       ),
                                     ),
-                                  ],
-                                ),
-                              );
-                            },
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
                         );
                       }
                       return const Center(child: CircularProgressIndicator());

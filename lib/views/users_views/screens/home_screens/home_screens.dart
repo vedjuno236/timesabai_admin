@@ -30,20 +30,20 @@ class HomeScreens extends StatefulWidget {
 
 class _HomeScreensState extends State<HomeScreens> {
   List<Folder> folders = [
-    Folder(folderName: 'ຈັດການຂໍ້ມຸນພະນັກງານ', storage: '0', colors: '#3a86ff'),
-    Folder(folderName: 'ຈັດການຂໍ້ມຸນພາກວິຊາ', storage: '0', colors: '#2ec4b6'),
-    Folder(folderName: 'ຈັດການຂໍ້ມຸນສາຂາ', storage: '0', colors: '#ffbe0b'),
-    Folder(folderName: 'ຈັດການຂໍ້ມຸນຕໍາແໜ່ງ', storage: '0', colors: '#25D162'),
-    Folder(folderName: 'ຂໍ້ມຸນລາພັກ', storage: '0', colors: '#fb5607'),
-    Folder(folderName: 'ຂໍ້ມຸນມາປະຈໍາການ', storage: '0', colors: '#577DF4'),
-    Folder(folderName: 'ຈັດການຂໍ້ມຸນພະແນກ', storage: '0', colors: '#FFBFA9'),
-    Folder(folderName: 'ຈັດການຂໍ້ມຸນຊົນເຜົ່າ', storage: '0', colors: '#424769'),
-    Folder(folderName: 'ຈັດການຂໍ້ມຸນແຂວງ', storage: '0', colors: '#F3CCFF'),
-    Folder(folderName: 'ຈັດການຂໍ້ມຸນເມືອງ', storage: '0', colors: '#8B5DFF'),
+    Folder(folderName: 'ຈັດການຂໍ້ມູນພະນັກງານ', storage: '0', colors: '#3a86ff'),
+    Folder(folderName: 'ຈັດການຂໍ້ມູນພາກວິຊາ', storage: '0', colors: '#2ec4b6'),
+    Folder(folderName: 'ຈັດການຂໍ້ມູນສາຂາ', storage: '0', colors: '#ffbe0b'),
+    Folder(folderName: 'ຈັດການຂໍ້ມູນຕໍາແໜ່ງ', storage: '0', colors: '#25D162'),
+    Folder(folderName: 'ຂໍ້ມູນລາພັກ', storage: '0', colors: '#fb5607'),
+    Folder(folderName: 'ຂໍ້ມູນມາປະຈໍາການ', storage: '0', colors: '#577DF4'),
+    Folder(folderName: 'ຈັດການຂໍ້ມູນພະແນກ', storage: '0', colors: '#FFBFA9'),
+    Folder(folderName: 'ຈັດການຂໍ້ມູນຊົນເຜົ່າ', storage: '0', colors: '#424769'),
+    Folder(folderName: 'ຈັດການຂໍ້ມູນແຂວງ', storage: '0', colors: '#F3CCFF'),
+    Folder(folderName: 'ຈັດການຂໍ້ມູນເມືອງ', storage: '0', colors: '#8B5DFF'),
     Folder(
-        folderName: 'ຈັດການຂໍ້ມຸນປະເພດລາພັກ', storage: '0', colors: '#FFBFA9'),
+        folderName: 'ຈັດການຂໍ້ມູນປະເພດລາພັກ', storage: '0', colors: '#FFBFA9'),
     Folder(
-        folderName: 'ຈັດການຂໍ້ມຸນຜູ້ໃຊ້ລະບົບ', storage: '0', colors: '#3a86ff'),
+        folderName: 'ຈັດການຂໍ້ມູນຜູ້ໃຊ້ລະບົບ', storage: '0', colors: '#3a86ff'),
   ];
 
   @override

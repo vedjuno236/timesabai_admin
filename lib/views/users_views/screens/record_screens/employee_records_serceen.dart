@@ -259,6 +259,7 @@ class _UsersOrdersScreenState extends State<UsersOrdersScreen> {
                       }
 
                       return Card(
+                          elevation: 0,
                           color: Colors.white,
                           child: Row(children: [
                             Container(
@@ -493,7 +494,7 @@ class _UsersOrdersScreenState extends State<UsersOrdersScreen> {
                   context,
                   MaterialPageRoute(
                     builder: (context) => ReportMonthRecord(
-                      searchName: _searchQuery,
+                      searchName: _searchName,
                       searchStatus: _searchQuery,
                       monthDate: _selectedMonth,
                     ),
@@ -511,7 +512,7 @@ class _UsersOrdersScreenState extends State<UsersOrdersScreen> {
                   context,
                   MaterialPageRoute(
                     builder: (context) => ReportDayRecord(
-                      searchName: _searchQuery,
+                      searchName: _searchName,
                       searchStatus: _searchQuery,
                       dayDate: _selectedDate,
                     ),

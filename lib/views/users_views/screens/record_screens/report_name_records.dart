@@ -136,11 +136,18 @@ class _ReportEmployeeState extends State<ReportNameRecord> {
                           fontSize: 25,
                         ),
                       ),
+                       pw.Text(
+                        '   ຄະນະວິສະວະກໍາສາດ',
+                        style: pw.TextStyle(
+                          font: font1,
+                          fontSize: 20,
+                        ),
+                      ),
                       pw.Text(
                         ' ລາຍງານຂໍ້ມູນປະຈໍາການ',
                         style: pw.TextStyle(
                           font: font1,
-                          fontSize: 25,
+                          fontSize: 18,
                         ),
                       ),
                       pw.Container(

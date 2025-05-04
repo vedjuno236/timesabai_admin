@@ -162,6 +162,7 @@ class _EmployeeLeaveSerceenState extends State<EmployeeLeaveSerceen> {
                       }
 
                       return Card(
+                        elevation: 0,
                         color: Colors.white,
                         child: Row(
                           children: [

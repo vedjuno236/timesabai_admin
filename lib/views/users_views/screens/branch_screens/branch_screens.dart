@@ -507,7 +507,8 @@ class _BranchScreensState extends State<BranchScreens> {
                                     departmentSnapshot.data!['name'];
 
                                 return Card(
-                                  color: Colors.white,
+                                  elevation: 0,
+                                  color: Colors.grey.withOpacity(0.1),
                                   child: Row(
                                     children: [
                                       Container(

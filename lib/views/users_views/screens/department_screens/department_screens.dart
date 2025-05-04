@@ -480,18 +480,16 @@ class _DepartmentScreensState extends State<DepartmentScreens> {
                             final DocumentSnapshot documentSnapshot =
                                 items[index];
                             return Card(
-                              color: Colors.white,
-
+                              elevation: 0,
+                              color: Colors.grey.withOpacity(0.1),
                               child: Row(
                                 children: [
                                   Container(
                                     decoration: BoxDecoration(
-
                                         color: colors[index % colors.length],
-                                        borderRadius: BorderRadius.only(topLeft: Radius.circular(12),
-                                            bottomLeft: Radius.circular(12))
-
-                                    ),
+                                        borderRadius: BorderRadius.only(
+                                            topLeft: Radius.circular(12),
+                                            bottomLeft: Radius.circular(12))),
                                     height: 72,
                                     width: 15,
                                   ),
@@ -512,45 +510,49 @@ class _DepartmentScreensState extends State<DepartmentScreens> {
                                               color: Colors.orangeAccent,
                                               onPressed: () =>
                                                   _update(documentSnapshot),
-                                              icon: const FaIcon(FontAwesomeIcons.penToSquare),
-
+                                              icon: const FaIcon(
+                                                  FontAwesomeIcons.penToSquare),
                                             ),
                                             IconButton(
                                               color: Colors.redAccent,
                                               onPressed: () async {
-                                              //   final result =
-                                              //       await showOkCancelAlertDialog(
-                                              //     context: context,
-                                              //     message:
-                                              //         'ທ່ານຕ້ອງການລົບແທ້ບໍ່',
-                                              //     okLabel: 'ຕົກລົງ',
-                                              //     cancelLabel: 'ຍົກເລີກ',
-                                              //   );
-                                              //   if (result ==
-                                              //       OkCancelResult.ok) {
-                                              //     _delete(documentSnapshot.id);
-                                              //   }
-                                              // },
-                                                PanaraConfirmDialog.showAnimatedGrow(
+                                                //   final result =
+                                                //       await showOkCancelAlertDialog(
+                                                //     context: context,
+                                                //     message:
+                                                //         'ທ່ານຕ້ອງການລົບແທ້ບໍ່',
+                                                //     okLabel: 'ຕົກລົງ',
+                                                //     cancelLabel: 'ຍົກເລີກ',
+                                                //   );
+                                                //   if (result ==
+                                                //       OkCancelResult.ok) {
+                                                //     _delete(documentSnapshot.id);
+                                                //   }
+                                                // },
+                                                PanaraConfirmDialog
+                                                    .showAnimatedGrow(
                                                   context,
                                                   color: Colors.blue,
                                                   title: "!!!!...!!!!",
-                                                  message: "ທ່ານຕ້ອງການລົບແທ້ບໍ່.",
+                                                  message:
+                                                      "ທ່ານຕ້ອງການລົບແທ້ບໍ່.",
                                                   confirmButtonText: "ຕົກລົງ",
                                                   cancelButtonText: "ຍົກເລີກ",
                                                   onTapCancel: () {
                                                     Navigator.pop(context);
                                                   },
                                                   onTapConfirm: () {
-
-                                                    _delete(documentSnapshot.id); // Call the delete method directly
-                                                    Navigator.pop(context); // Ensure to close the dialog after confirmation
-
+                                                    _delete(documentSnapshot
+                                                        .id); // Call the delete method directly
+                                                    Navigator.pop(
+                                                        context); // Ensure to close the dialog after confirmation
                                                   },
-                                                  panaraDialogType: PanaraDialogType.success,
+                                                  panaraDialogType:
+                                                      PanaraDialogType.success,
                                                 );
                                               },
-                                              icon: const FaIcon(FontAwesomeIcons.trashCan),
+                                              icon: const FaIcon(
+                                                  FontAwesomeIcons.trashCan),
                                             )
                                           ],
                                         ),

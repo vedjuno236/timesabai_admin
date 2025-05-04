@@ -406,138 +406,113 @@ class _EmployeeScreensState extends State<EmployeeScreens> {
 
                             final position = positionSnapshot.data;
 
-                            return Card(
-                                color: Colors.white,
-                                child: Row(children: [
-                                  Container(
-                                    decoration: BoxDecoration(
-                                        color: colors[index % colors.length],
-                                        borderRadius: BorderRadius.only(
-                                            topLeft: Radius.circular(12),
-                                            bottomLeft: Radius.circular(12))),
-                                    height: 290,
-                                    width: 20,
-                                  ),
-                                  Expanded(
-                                    child: ListTile(
-                                      leading: Container(
-                                        padding: EdgeInsets.all(2),
-                                        height: 70,
-                                        width: 70,
-                                        decoration: const BoxDecoration(
-                                          color: Color(0xFF577DF4),
-                                          shape: BoxShape.circle,
-                                        ),
-                                        child: Container(
-                                          padding: const EdgeInsets.all(8),
-                                          decoration: const BoxDecoration(
-                                            color: Colors.white,
-                                            shape: BoxShape.circle,
-                                          ),
-                                          child: ClipOval(
-                                            child: Container(
-                                              height: 250,
-                                              width: 250,
-                                              child: Image.network(
+
+                            return Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 5),
+                              child: Container(
+                                decoration:
+                                    BoxDecoration(color: Colors.grey.shade100),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        CircleAvatar(
+                                          radius: 40,
+                                          backgroundColor: Colors.white,
+                                          child: CircleAvatar(
+                                              radius: 30,
+                                              backgroundImage: NetworkImage(
                                                 employee.profileImage.isEmpty
                                                     ? 'https://gratisography.com/wp-content/uploads/2023/10/gratisography-cool-cat-800x525.jpg'
                                                     : employee.profileImage,
-                                                fit: BoxFit.cover,
-                                                errorBuilder: (context, error,
-                                                    stackTrace) {
-                                                  return const Icon(
-                                                      Icons.error);
-                                                },
-                                              ),
-                                            ),
-                                          ),
+                                              )),
                                         ),
-                                      ),
-                                      title: Text(employee.name),
-                                      subtitle: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            "ພາກວິຊາ: ${department?.name ?? 'ບໍ່ມີຂໍ້ມູນ'}",
-                                            style: GoogleFonts.notoSansLao(
-                                              fontSize: 15,
-                                            ),
-                                          ),
-                                          Text(
-                                            "ຕໍາແໜ່ງ: ${position?.name ?? 'ບໍ່ມີຂໍ້ມູນ'}",
-                                            style: GoogleFonts.notoSansLao(
-                                              fontSize: 15,
-                                            ),
-                                          ),
-                                          Text(
-                                            "ວດປ: ${employee.dateOfBirth}",
-                                            style: GoogleFonts.notoSansLao(
-                                              fontSize: 15,
-                                            ),
-                                          ),
-                                          Text(
-                                            "ID: ${employee.employeeId}",
-                                            style: GoogleFonts.notoSansLao(
-                                              fontSize: 15,
-                                            ),
-                                          ),
-                                          Text(
-                                            "Password: ${employee.password}",
-                                            style: GoogleFonts.notoSansLao(
-                                              fontSize: 15,
-                                            ),
-                                          ),
-                                          Text(
-                                            "ເບິໂທ: ${employee.phone}",
-                                            style: GoogleFonts.notoSansLao(
-                                              fontSize: 15,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      trailing: SizedBox(
-                                        width: 100,
-                                        child: Row(
+                                        const SizedBox(
+                                          width: 5,
+                                        ),
+                                        Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
                                           children: [
-                                            IconButton(
-                                              color: Colors.orangeAccent,
-                                              onPressed: () =>
-                                                  _update(employee.id),
-                                              icon: const FaIcon(
-                                                  FontAwesomeIcons.penToSquare),
+                                            Text(
+                                              employee.name,
+                                              style: GoogleFonts.notoSansLao(
+                                                  fontSize: 15),
                                             ),
-                                            IconButton(
-                                              color: Colors.redAccent,
-                                              onPressed: () async {
-                                                PanaraConfirmDialog
-                                                    .showAnimatedGrow(
-                                                  context,
-                                                  title: "!!!!...!!!!",
-                                                  message:
-                                                      "ທ່ານຕ້ອງການລົບແທ້ບໍ່.",
-                                                  confirmButtonText: "ຕົກລົງ",
-                                                  cancelButtonText: "ຍົກເລີກ",
-                                                  onTapCancel: () {
-                                                    Navigator.pop(context);
-                                                  },
-                                                  onTapConfirm: () {
-                                                    _delete(employee.id);
-                                                    Navigator.pop(context);
-                                                  },
-                                                  panaraDialogType:
-                                                      PanaraDialogType.success,
-                                                );
-                                              },
-                                              icon: const FaIcon(
-                                                  FontAwesomeIcons.trashCan),
+                                            Text(
+                                              "ຕໍາແໜ່ງ: ${position?.name ?? 'ບໍ່ມີຂໍ້ມູນ'}",
+                                              style: GoogleFonts.notoSansLao(
+                                                  fontSize: 15),
                                             ),
+                                            Text(
+                                              "ພາກວິຊາ: ${department?.name ?? 'ບໍ່ມີຂໍ້ມູນ'}",
+                                              style: GoogleFonts.notoSansLao(
+                                                  fontSize: 15),
+                                            ),
+                                            Text(
+                                              "ວດປ: ${employee.dateOfBirth}",
+                                              style: GoogleFonts.notoSansLao(
+                                                  fontSize: 15),
+                                            ),
+                                            Text(
+                                              "ID: ${employee.employeeId}",
+                                              style: GoogleFonts.notoSansLao(
+                                                  fontSize: 15),
+                                            ),
+                                            Text(
+                                              "Password: ${employee.password}",
+                                              style: GoogleFonts.notoSansLao(
+                                                  fontSize: 15),
+                                            ),
+                                            Text(
+                                              "ເບິໂທ: ${employee.phone}",
+                                              style: GoogleFonts.notoSansLao(
+                                                  fontSize: 15),
+                                            )
                                           ],
                                         ),
-                                      ),
+                                      ],
                                     ),
-                                  ),
-                                ]));
+                                    Column(
+                                      children: [
+                                        IconButton(
+                                          color: Colors.orangeAccent,
+                                          onPressed: () => _update(employee.id),
+                                          icon: const FaIcon(
+                                              FontAwesomeIcons.penToSquare),
+                                        ),
+                                        IconButton(
+                                          color: Colors.redAccent,
+                                          onPressed: () async {
+                                            PanaraConfirmDialog
+                                                .showAnimatedGrow(
+                                              context,
+                                              title: "!!!!...!!!!",
+                                              message: "ທ່ານຕ້ອງການລົບແທ້ບໍ່.",
+                                              confirmButtonText: "ຕົກລົງ",
+                                              cancelButtonText: "ຍົກເລີກ",
+                                              onTapCancel: () {
+                                                Navigator.pop(context);
+                                              },
+                                              onTapConfirm: () {
+                                                _delete(employee.id);
+                                                Navigator.pop(context);
+                                              },
+                                              panaraDialogType:
+                                                  PanaraDialogType.success,
+                                            );
+                                          },
+                                          icon: const FaIcon(
+                                              FontAwesomeIcons.trashCan),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
                           },
                         );
                       },

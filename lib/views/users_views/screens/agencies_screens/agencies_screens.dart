@@ -328,7 +328,8 @@ class _AgenciesScreensState extends State<AgenciesScreens> {
                             final DocumentSnapshot documentSnapshot =
                                 items[index];
                             return Card(
-                              color: Colors.white,
+                              elevation: 0,
+                              color: Colors.grey.withOpacity(0.1),
                               child: Row(
                                 children: [
                                   Container(
