@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:admin_timesabai/components/logging.dart';
 import 'package:admin_timesabai/views/users_views/screens/leave_screens/pdf_leave_view.dart';
 import 'package:admin_timesabai/views/users_views/screens/leave_screens/report__month_leave.dart';
 import 'package:admin_timesabai/views/users_views/screens/leave_screens/report_day_leave.dart';
@@ -626,7 +627,7 @@ class _EmployeeLeaveSerceenState extends State<EmployeeLeaveSerceen> {
                   context,
                   MaterialPageRoute(
                     builder: (context) => ReportMonthLeave(
-                      searchQuery: _searchQuery,
+                      searchName: _searchName,
                       Month: _selectedMonth,
                     ),
                   ),
@@ -643,11 +644,13 @@ class _EmployeeLeaveSerceenState extends State<EmployeeLeaveSerceen> {
                   context,
                   MaterialPageRoute(
                     builder: (context) => ReportDayLeave(
-                      searchQuery: _searchQuery,
+                      searchName: _searchName,
                       Day: _selectedDate,
                     ),
                   ),
                 );
+
+                logger.d(_selectedDate);
               },
               backgroundColor: Colors.orangeAccent),
         ],

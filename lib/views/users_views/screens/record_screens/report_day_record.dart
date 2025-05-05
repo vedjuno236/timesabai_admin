@@ -77,9 +77,38 @@ class _ReportEmployeeState extends State<ReportDayRecord> {
       // Loop through records to find matching date and status
       for (var recordDoc in recordSnapshot.docs) {
         final recordData = recordDoc.data() as Map<String, dynamic>;
-        final checkInTime = recordData['checkIn'] ?? 'ບໍ່ມີຂໍ້ມູນ';
-        final checkOutTime = recordData['checkOut'] ?? 'ບໍ່ມີຂໍ້ມູນ';
-        final status = recordData['status'] ?? 'ບໍ່ມີຂໍ້ມູນ';
+
+        // Check and replace missing or empty data with '----/----'
+        final checkInAM = (recordData['clockInAM'] == null ||
+                recordData['clockInAM'] == 'ບໍ່ມີຂໍ້ມູນ' ||
+                (recordData['clockInAM'] is String &&
+                    recordData['clockInAM'].isEmpty))
+            ? '----/----'
+            : recordData['clockInAM'];
+        final checkOutAM = (recordData['clockOutAM'] == null ||
+                recordData['clockOutAM'] == 'ບໍ່ມີຂໍ້ມູນ' ||
+                (recordData['clockOutAM'] is String &&
+                    recordData['clockOutAM'].isEmpty))
+            ? '----/----'
+            : recordData['clockOutAM'];
+        final checkInPM = (recordData['clockInPM'] == null ||
+                recordData['clockInPM'] == 'ບໍ່ມີຂໍ້ມູນ' ||
+                (recordData['clockInPM'] is String &&
+                    recordData['clockInPM'].isEmpty))
+            ? '----/----'
+            : recordData['clockInPM'];
+        final checkOutPM = (recordData['clockOutPM'] == null ||
+                recordData['clockOutPM'] == 'ບໍ່ມີຂໍ້ມູນ' ||
+                (recordData['clockOutPM'] is String &&
+                    recordData['clockOutPM'].isEmpty))
+            ? '----/----'
+            : recordData['clockOutPM'];
+        // Determine status based on clockInAM and clockInPM
+        String status = recordData['status'] ?? 'ບໍ່ມີຂໍ້ມູນ';
+        if (checkInPM == '----/----' && (checkInAM != '----/----')) {
+          status = 'ມາວຽກ1ຕອນ';
+        }
+        print('  Final status: $status');
 
         // Check if status matches search criteria
         if (widget.searchStatus.isNotEmpty && status != widget.searchStatus) {
@@ -91,8 +120,10 @@ class _ReportEmployeeState extends State<ReportDayRecord> {
         // Add record data
         employeeData.add({
           'name': employeeName,
-          'checkIn': checkInTime,
-          'checkOut': checkOutTime,
+          'clockInAM': checkInAM,
+          'clockOutAM': checkOutAM,
+          'clockInPM': checkInPM,
+          'clockOutPM': checkOutPM,
           'status': status,
           'date': formattedTargetDate,
         });
@@ -103,8 +134,10 @@ class _ReportEmployeeState extends State<ReportDayRecord> {
         if (widget.searchStatus.isEmpty || widget.searchStatus == 'ຂາດວຽກ') {
           employeeData.add({
             'name': employeeName,
-            'checkIn': '----/----',
-            'checkOut': '----/----',
+            'clockInAM': '----/----',
+            'clockOutAM': '----/----',
+            'clockInPM': '----/----',
+            'clockOutPM': '----/----',
             'status': 'ຂາດວຽກ',
             'date': formattedTargetDate,
           });
@@ -244,7 +277,7 @@ class _ReportEmployeeState extends State<ReportDayRecord> {
                           pw.Padding(
                             padding: const pw.EdgeInsets.all(8),
                             child: pw.Text(
-                              'ເຂົ້າວຽກ',
+                              'ເຂົ້າວຽກເຊົ້າ',
                               style: pw.TextStyle(font: font1, fontSize: 10),
                               textAlign: pw.TextAlign.center,
                             ),
@@ -252,7 +285,23 @@ class _ReportEmployeeState extends State<ReportDayRecord> {
                           pw.Padding(
                             padding: const pw.EdgeInsets.all(8),
                             child: pw.Text(
-                              'ອອກວຽກ',
+                              'ອອກວຽກເຊົ້າ',
+                              style: pw.TextStyle(font: font1, fontSize: 10),
+                              textAlign: pw.TextAlign.center,
+                            ),
+                          ),
+                          pw.Padding(
+                            padding: const pw.EdgeInsets.all(8),
+                            child: pw.Text(
+                              'ເຂົ້າວຽກແລງ',
+                              style: pw.TextStyle(font: font1, fontSize: 10),
+                              textAlign: pw.TextAlign.center,
+                            ),
+                          ),
+                          pw.Padding(
+                            padding: const pw.EdgeInsets.all(8),
+                            child: pw.Text(
+                              'ອອກວຽກແລງ',
                               style: pw.TextStyle(font: font1, fontSize: 10),
                               textAlign: pw.TextAlign.center,
                             ),
@@ -290,7 +339,7 @@ class _ReportEmployeeState extends State<ReportDayRecord> {
                             pw.Padding(
                               padding: const pw.EdgeInsets.all(8),
                               child: pw.Text(
-                                entry['checkIn'].toString(),
+                                entry['clockInAM'].toString(),
                                 style: pw.TextStyle(font: font1, fontSize: 10),
                                 textAlign: pw.TextAlign.center,
                               ),
@@ -298,7 +347,23 @@ class _ReportEmployeeState extends State<ReportDayRecord> {
                             pw.Padding(
                               padding: const pw.EdgeInsets.all(8),
                               child: pw.Text(
-                                entry['checkOut'].toString(),
+                                entry['clockOutAM'].toString(),
+                                style: pw.TextStyle(font: font1, fontSize: 10),
+                                textAlign: pw.TextAlign.center,
+                              ),
+                            ),
+                            pw.Padding(
+                              padding: const pw.EdgeInsets.all(8),
+                              child: pw.Text(
+                                entry['clockInPM'].toString(),
+                                style: pw.TextStyle(font: font1, fontSize: 10),
+                                textAlign: pw.TextAlign.center,
+                              ),
+                            ),
+                            pw.Padding(
+                              padding: const pw.EdgeInsets.all(8),
+                              child: pw.Text(
+                                entry['clockOutPM'].toString(),
                                 style: pw.TextStyle(font: font1, fontSize: 10),
                                 textAlign: pw.TextAlign.center,
                               ),
@@ -310,9 +375,16 @@ class _ReportEmployeeState extends State<ReportDayRecord> {
                                 style: pw.TextStyle(
                                   font: font1,
                                   fontSize: 10,
-                                  color: entry['status'] == 'ຂາດວຽກ'
-                                      ? PdfColors.red
-                                      : PdfColors.black,
+                                  color: entry['status'] == 'ວັນພັກ'
+                                      ? PdfColors.blue
+                                      : entry['status'] == 'ຂາດວຽກ'
+                                          ? PdfColors.red
+                                          : entry['status'] == 'ມາວຽກຊ້າ'
+                                              ? PdfColors.pink
+                                              : entry['status'] == 'ມາວຽກ1ຕອນ'
+                                                  ? PdfColors
+                                                      .blueAccent // Add color for new status
+                                                  : PdfColors.black,
                                 ),
                                 textAlign: pw.TextAlign.center,
                               ),

@@ -1,9 +1,12 @@
 import 'dart:io';
 
+import 'package:admin_timesabai/views/users_views/screens/login_screens/login.dart';
+import 'package:admin_timesabai/views/users_views/screens/login_screens/login_screens.dart';
 import 'package:admin_timesabai/views/users_views/screens/settings/password_screens.dart';
 import 'package:admin_timesabai/views/users_views/screens/settings/settings_location.dart';
 import 'package:admin_timesabai/views/users_views/screens/settings/settings_times.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -361,6 +364,54 @@ class _SettingsStystemState extends State<SettingsStystem> {
                         SizedBox(width: 20),
                         Text(
                           "ປ່ຽນລະຫັດຜ່ານ",
+                          style: GoogleFonts.notoSansLao(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const Spacer(),
+                        Container(
+                          width: 60,
+                          height: 60,
+                          decoration: BoxDecoration(
+                            color: Colors.grey.shade200,
+                            borderRadius: BorderRadius.circular(15),
+                          ),
+                          child: Icon(Ionicons.chevron_forward_outline),
+                        )
+                      ],
+                    ),
+                  ),
+                ),
+                SizedBox(height: 20),
+                GestureDetector(
+                  onTap: () async {
+                    await FirebaseAuth.instance
+                        .signOut(); // Sign out the user (token is removed)
+
+                    Navigator.of(context)
+                        .push(MaterialPageRoute(builder: (context) => Login()));
+                  },
+                  child: Container(
+                    width: double.infinity,
+                    child: Row(
+                      children: [
+                        Container(
+                          height: 60,
+                          width: 60,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.blue.shade100,
+                          ),
+                          child: const Icon(
+                            Ionicons.log_out_outline,
+                            color: Color(0xFF577DF4),
+                            size: 49,
+                          ),
+                        ),
+                        SizedBox(width: 20),
+                        Text(
+                          "ອອກຈາກລະບົບ",
                           style: GoogleFonts.notoSansLao(
                             fontSize: 15,
                             fontWeight: FontWeight.w600,

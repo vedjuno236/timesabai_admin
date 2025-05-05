@@ -406,7 +406,6 @@ class _EmployeeScreensState extends State<EmployeeScreens> {
 
                             final position = positionSnapshot.data;
 
-
                             return Padding(
                               padding: const EdgeInsets.symmetric(vertical: 5),
                               child: Container(

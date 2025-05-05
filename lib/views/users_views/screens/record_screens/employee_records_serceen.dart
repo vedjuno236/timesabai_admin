@@ -368,6 +368,8 @@ class _UsersOrdersScreenState extends State<UsersOrdersScreen> {
                                                   searchFilteredOrders[index]
                                                           .data()
                                                       as Map<String, dynamic>;
+
+                                                      print(record);
                                               return ExpansionTile(
                                                 title: Text(
                                                   "ວັນທີ: ${DateFormat.yMMMMEEEEd().format((record['date'] as Timestamp).toDate())}",
@@ -390,7 +392,7 @@ class _UsersOrdersScreenState extends State<UsersOrdersScreen> {
                                                               .start,
                                                       children: [
                                                         Text(
-                                                          'ເວລາເຂົ້າ: ${record['checkIn']}',
+                                                          'ເວລາເຂົ້າຕອນເຊົ້າ: ${record['clockInAM']}',
                                                           style: GoogleFonts
                                                               .notoSansLao(
                                                             fontSize: 15,
@@ -399,7 +401,25 @@ class _UsersOrdersScreenState extends State<UsersOrdersScreen> {
                                                         const SizedBox(
                                                             height: 5),
                                                         Text(
-                                                          'ເວລາອອກ: ${record['checkOut']}',
+                                                          'ເວລາອອກຕອນເຊົ້າ: ${record['clockOutAM']}',
+                                                          style: GoogleFonts
+                                                              .notoSansLao(
+                                                            fontSize: 15,
+                                                          ),
+                                                        ),
+                                                        const SizedBox(
+                                                            height: 5),
+                                                             Text(
+                                                          'ເວລາເຂົ້າຕອນແລງ: ${record['clockInPM']}',
+                                                          style: GoogleFonts
+                                                              .notoSansLao(
+                                                            fontSize: 15,
+                                                          ),
+                                                        ),
+                                                        const SizedBox(
+                                                            height: 5),
+                                                        Text(
+                                                          'ເວລາອອກຕອນແລງ: ${record['clockOutPM']}',
                                                           style: GoogleFonts
                                                               .notoSansLao(
                                                             fontSize: 15,

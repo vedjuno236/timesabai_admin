@@ -1,11 +1,13 @@
 import 'package:admin_timesabai/service/notification/firebase_notification.dart';
 import 'package:admin_timesabai/views/users_views/screens/leave_screens/employee_levae_screen.dart';
 import 'package:admin_timesabai/views/users_views/screens/settings/password_screens.dart';
+import 'package:admin_timesabai/views/widget/loading_platform/loading.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:ionicons/ionicons.dart';
 import 'package:status_alert/status_alert.dart';
 
 import '../../../../components/backGroun.dart';
@@ -32,183 +34,237 @@ class _LoginState extends State<Login> {
     final size = MediaQuery.of(context).size;
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      body: BackGround(
-        child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 20),
-          child: Form(
-            key: _formkey,
-            child: SingleChildScrollView(
-              // Added SingleChildScrollView
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  SizedBox(height: size.height * 0.2),
-                  // Adds some space at the top
-                  Container(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      'Document TimeSabi'.toUpperCase(),
+      body: CustomProgressHUD(
+        key: UniqueKey(),
+        inAsyncCall: isLoading,
+        opacity: .7,
+        child: BackGround(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Form(
+              key: _formkey,
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    SizedBox(height: size.height * 0.2),
+                    Text(
+                      'ມະຫາວິທະຍາໄລ ສຸພານຸວົງ',
                       style: GoogleFonts.notoSansLao(
-                        fontSize: 18,
+                        fontSize: 25,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
                       ),
                     ),
-                  ),
-                  SizedBox(height: 20),
-
-                  TextFormField(
-                    controller: emailController,
-                    cursorColor: Colors.white,
-                    style: GoogleFonts.notoSansLao(
-                      textStyle: const TextStyle(
-                        fontSize: 15,
+                    const SizedBox(
+                      height: 5,
+                    ),
+                    Text(
+                      'ຄະນະວິສະວະກໍາສາດ',
+                      style: GoogleFonts.notoSansLao(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
                         color: Colors.white,
                       ),
                     ),
-                    decoration: InputDecoration(
-                      hintText: "ອີເມວ",
-                      hintStyle: GoogleFonts.notoSansLao(
-                        textStyle: const TextStyle(
+                    const SizedBox(
+                      height: 5,
+                    ),
+                    Align(
+                      alignment: Alignment.topLeft,
+                      child: Text(
+                        'ປ້ອນອີເມວ',
+                        style: GoogleFonts.notoSansLao(
                           fontSize: 15,
-                          color: Colors.white,
-                        ),
-                      ),
-                      prefixIcon: const Icon(
-                        Icons.email,
-                        color: Colors.white,
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: const BorderSide(color: Colors.white),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: const BorderSide(color: Colors.white),
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: 40),
-
-                  TextFormField(
-                    obscureText: _isObscure3,
-                    controller: passwordController,
-                    cursorColor: Colors.white,
-                    style: GoogleFonts.notoSansLao(
-                      textStyle: const TextStyle(
-                        fontSize: 15,
-                        color: Colors.white,
-                      ),
-                    ),
-                    decoration: InputDecoration(
-                      hintText: "ລະຫັດຜ່ານ",
-                      hintStyle: GoogleFonts.notoSansLao(
-                        textStyle: const TextStyle(
-                          fontSize: 15,
-                          color: Colors.white,
-                        ),
-                      ),
-                      prefixIcon: const Icon(
-                        Icons.padding,
-                        color: Colors.white,
-                      ),
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          _isObscure3 ? Icons.visibility : Icons.visibility_off,
-                        ),
-                        onPressed: () {
-                          setState(() {
-                            _isObscure3 = !_isObscure3;
-                          });
-                        },
-                        color: Colors.white,
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: const BorderSide(color: Colors.white),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: const BorderSide(color: Colors.white),
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: 20),
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const PasswordScreens(),
-                        ),
-                      );
-                    },
-                    child: Container(
-                      alignment: Alignment.centerRight,
-                      child: const Text(
-                        'Forget your password?',
-                        style: TextStyle(
-                          fontSize: 12,
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
                         ),
+                        textAlign: TextAlign.right,
                       ),
                     ),
-                  ),
-                  SizedBox(height: 50),
-                  SizedBox(
-                    height: 60,
-                    width: 600,
-                    child: OutlinedButton(
-                      onPressed: isLoading
-                          ? null
-                          : () async {
-                              setState(() {
-                                isLoading = true;
-                              });
-                              await Future.delayed(const Duration(seconds: 2));
-                              signIn(context, emailController.text,
-                                  passwordController.text);
-                              setState(() {
-                                isLoading = false;
-                              });
-                            },
-                      style: OutlinedButton.styleFrom(
-                        backgroundColor: Colors.blueGrey,
-                        side: const BorderSide(color: Colors.blueGrey),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
+                    SizedBox(height: 5),
+                    TextFormField(
+                      controller: emailController,
+                      cursorColor: Colors.white,
+                      style: GoogleFonts.notoSansLao(
+                        textStyle: const TextStyle(
+                          fontSize: 15,
+                          color: Colors.white,
                         ),
                       ),
-                      child: isLoading
-                          ? const SpinKitCircle(
-                              color: Colors.white,
-                              size: 30.0,
-                            )
-                          : Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                const Icon(
-                                  Icons.send,
-                                  color: Colors.white,
-                                ),
-                                const SizedBox(width: 20),
-                                Text(
-                                  'Login',
-                                  style: GoogleFonts.notoSansLao(
-                                    textStyle: const TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.white,
-                                    ),
+                      decoration: InputDecoration(
+                        hintText: "ອີເມວ",
+                        hintStyle: GoogleFonts.notoSansLao(
+                          textStyle: const TextStyle(
+                            fontSize: 15,
+                            color: Colors.white,
+                          ),
+                        ),
+                        prefixIcon: const Icon(
+                          Icons.email_outlined,
+                          color: Colors.white,
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: const BorderSide(color: Colors.white),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: const BorderSide(color: Colors.white),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(
+                      height: 10,
+                    ),
+                    Align(
+                      alignment: Alignment.topLeft,
+                      child: Text(
+                        'ປ້ອນລະຫັດຜ່ານ',
+                        style: GoogleFonts.notoSansLao(
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                        textAlign: TextAlign.right,
+                      ),
+                    ),
+                    const SizedBox(
+                      height: 5,
+                    ),
+                    TextFormField(
+                      obscureText: _isObscure3,
+                      controller: passwordController,
+                      cursorColor: Colors.white,
+                      style: GoogleFonts.notoSansLao(
+                        textStyle: const TextStyle(
+                          fontSize: 15,
+                          color: Colors.white,
+                        ),
+                      ),
+                      decoration: InputDecoration(
+                        hintText: "ລະຫັດຜ່ານ",
+                        hintStyle: GoogleFonts.notoSansLao(
+                          textStyle: const TextStyle(
+                            fontSize: 15,
+                            color: Colors.white,
+                          ),
+                        ),
+                        prefixIcon: const Icon(
+                          Icons.key_sharp,
+                          color: Colors.white,
+                        ),
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _isObscure3
+                                ? Icons.visibility
+                                : Icons.visibility_off,
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              _isObscure3 = !_isObscure3;
+                            });
+                          },
+                          color: Colors.white,
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: const BorderSide(color: Colors.white),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: const BorderSide(color: Colors.white),
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 20),
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const PasswordScreens(),
+                          ),
+                        );
+                      },
+                      child: Container(
+                        alignment: Alignment.centerRight,
+                        child: const Text(
+                          'Forget your password?',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 50),
+                    SizedBox(
+                      height: 60,
+                      width: 600,
+                      child: OutlinedButton(
+                        onPressed: isLoading
+                            ? null
+                            : () async {
+                                setState(() {
+                                  isLoading = true;
+                                });
+                                await Future.delayed(
+                                    const Duration(seconds: 2));
+                                signIn(context, emailController.text,
+                                    passwordController.text);
+                                setState(() {
+                                  isLoading = false;
+                                });
+                              },
+                        style: OutlinedButton.styleFrom(
+                          backgroundColor: Colors.blueGrey,
+                          side: const BorderSide(color: Colors.blueGrey),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        child: isLoading
+                            // ? const SpinKitCircle(
+                            //     color: Colors.white,
+                            //     size: 30.0,
+                            //   )
+                            ? Text(
+                                'ກໍາລັງເຂົ້າສູ່ລະບົບ.....',
+                                style: GoogleFonts.notoSansLao(
+                                  textStyle: const TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
                                   ),
                                 ),
-                              ],
-                            ),
+                              )
+                            : Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  const Icon(
+                                    Icons.send,
+                                    color: Colors.white,
+                                  ),
+                                  const SizedBox(width: 20),
+                                  Text(
+                                    'ເຂົ້າສູ່ລະບົບ',
+                                    style: GoogleFonts.notoSansLao(
+                                      textStyle: const TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
@@ -290,7 +346,7 @@ class _LoginState extends State<Login> {
         );
         StatusAlert.show(
           context,
-          duration: Duration(seconds: 2),
+          duration: Duration(milliseconds: 1000),
           subtitle: 'ເຂົ້າສູ່ລະບົບສໍາເລັດ.',
           subtitleOptions: StatusAlertTextConfiguration(
             style: GoogleFonts.notoSansLao(

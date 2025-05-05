@@ -8,11 +8,11 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 
 class ReportMonthLeave extends StatefulWidget {
-  final String searchQuery;
+  final String searchName;
   final DateTime? Month;
 
   const ReportMonthLeave(
-      {super.key, required this.searchQuery, required this.Month});
+      {super.key, required this.searchName, required this.Month});
 
   @override
   State<ReportMonthLeave> createState() => _ReportEmployeeState();
@@ -66,10 +66,10 @@ class _ReportEmployeeState extends State<ReportMonthLeave> {
         final day = recordData['date'] ?? 'ບໍມີຂໍໍມູນ';
 
         bool matchesName = true;
-        if (widget.searchQuery.isNotEmpty &&
+        if (widget.searchName.isNotEmpty &&
             !employeeName
                 .toLowerCase()
-                .contains(widget.searchQuery.toLowerCase())) {
+                .contains(widget.searchName.toLowerCase())) {
           matchesName = false;
         }
 
@@ -193,7 +193,7 @@ class _ReportEmployeeState extends State<ReportMonthLeave> {
                       pw.Container(
                         alignment: pw.Alignment.centerLeft,
                         child: pw.Text(
-                          'ລາຍງານສະຖານະ: ${widget.searchQuery}',
+                          'ລາຍງານສະຖານະ: ${widget.searchName}',
                           // Add appropriate value if needed
                           style: pw.TextStyle(
                             font: font1,

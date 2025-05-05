@@ -1,3 +1,4 @@
+import 'package:admin_timesabai/components/logging.dart';
 import 'package:flutter/cupertino.dart';
 import 'dart:typed_data';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -9,11 +10,11 @@ import 'package:intl/intl.dart';
 import 'package:printing/printing.dart';
 
 class ReportDayLeave extends StatefulWidget {
-  final String searchQuery;
+  final String searchName;
   final DateTime? Day;
 
   const ReportDayLeave(
-      {super.key, required this.searchQuery, required this.Day});
+      {super.key, required this.searchName, required this.Day});
 
   @override
   State<ReportDayLeave> createState() => _ReportEmployeeState();
@@ -50,11 +51,9 @@ class _ReportEmployeeState extends State<ReportDayLeave> {
       // Fetch employee name
       final employeeName = employeeDataMap['name'] ?? 'ບໍມີຂໍໍມູນ';
 
-      // Fetch employee records from the 'Record' subcollection
       final recordSnapshot =
           await employeeDoc.reference.collection('Leave').get();
 
-      // Loop through each record and filter based on search conditions
       for (var recordDoc in recordSnapshot.docs) {
         final recordData = recordDoc.data() as Map<String, dynamic>;
 
@@ -67,37 +66,41 @@ class _ReportEmployeeState extends State<ReportDayLeave> {
         final day = recordData['date'] ?? 'ບໍມີຂໍໍມູນ';
 
         bool matchesName = true;
-        if (widget.searchQuery.isNotEmpty &&
-            employeeName != widget.searchQuery) {
+        if (widget.searchName.isNotEmpty &&
+            !employeeName
+                .toLowerCase()
+                .contains(widget.searchName.toLowerCase())) {
           matchesName = false;
         }
+
         if (matchesName) {
           Timestamp? date = recordData['date'];
           if (date != null) {
             DateTime recordDate = date.toDate();
+            logger.d('Record Date: $recordDate, Selected Day: ${widget.Day}');
 
-            // Check for Month or Day filtering
             if (widget.Day != null) {
-              if (recordDate.year != widget.Day!.year ||
-                  recordDate.month != widget.Day!.month ||
-                  recordDate.day != widget.Day!.day) {
+              DateTime selectedDay = DateTime(
+                  widget.Day!.year, widget.Day!.month, widget.Day!.day);
+              DateTime recordDay =
+                  DateTime(recordDate.year, recordDate.month, recordDate.day);
+              if (recordDay != selectedDay) {
                 continue;
               }
             }
           }
 
-          // Convert Firestore timestamp to string
           String fromDateString = fromDate != null
-              ? DateFormat.MMMMEEEEd().format(fromDate.toDate())
+              ? DateFormat('EEEE d MMMM yyyy').format(fromDate.toDate())
               : 'ບໍມີຂໍໍມູນ';
 
           String toDateString = toDate != 'ບໍມີຂໍໍມູນ' && toDate is Timestamp
-              ? DateFormat.MMMMEEEEd().format(toDate.toDate())
+              ? DateFormat('EEEE d MMMM yyyy').format(toDate.toDate())
               : 'ບໍມີຂໍໍມູນ';
           String todayString = day != 'ບໍມີຂໍໍມູນ' && date is Timestamp
-              ? DateFormat.MMMMEEEEd().format(date.toDate())
+              ? DateFormat('EEEE d MMMM ').format(date.toDate())
               : 'ບໍມີຂໍໍມູນ';
-          // Add filtered data to employeeData
+
           employeeData.add({
             'name': employeeName,
             'date': todayString,
@@ -156,7 +159,7 @@ class _ReportEmployeeState extends State<ReportDayLeave> {
                         ),
                       ),
                       pw.Text(
-                        '  ຄະນະວິສະວະກໍາສາດ',
+                        'ຄະນະວິສະວະກໍາສາດ',
                         style: pw.TextStyle(
                           font: font1,
                           fontSize: 20,
@@ -183,7 +186,7 @@ class _ReportEmployeeState extends State<ReportDayLeave> {
                       pw.Container(
                         alignment: pw.Alignment.centerLeft,
                         child: pw.Text(
-                          'ລາຍງານການລາພັກລາຍວັນ:  ${widget.Day != null ? DateFormat('dd MMMM ', 'lo').format(widget.Day!) : ''}', // Add appropriate value if needed
+                          'ລາຍງານການລາພັກປະຈໍາວັນ:  ${widget.Day != null ? DateFormat('MMMM yyyy', 'lo').format(widget.Day!) : ''}', // Add appropriate value if needed
                           style: pw.TextStyle(
                             font: font1,
                             fontSize: 15,
@@ -194,7 +197,8 @@ class _ReportEmployeeState extends State<ReportDayLeave> {
                       pw.Container(
                         alignment: pw.Alignment.centerLeft,
                         child: pw.Text(
-                          'ລາຍງານສະຖານະ: ${widget.searchQuery}', // Add appropriate value if needed
+                          'ລາຍງານສະຖານະ: ${widget.searchName}',
+                          // Add appropriate value if needed
                           style: pw.TextStyle(
                             font: font1,
                             fontSize: 15,
