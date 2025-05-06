@@ -310,11 +310,17 @@ class _EmployeeScreensState extends State<EmployeeScreens> {
                 child: TextField(
                   controller: _searchController,
                   onChanged: _onSearchChanged,
-                  decoration: const InputDecoration(
-                      contentPadding: EdgeInsets.fromLTRB(16, 20, 16, 12),
-                      hintStyle: TextStyle(color: Colors.black),
-                      border: InputBorder.none,
-                      hintText: 'Search..'),
+                  decoration: InputDecoration(
+                    contentPadding: EdgeInsets.fromLTRB(16, 20, 16, 12),
+                    hintStyle: GoogleFonts.notoSansLao(
+                      textStyle: const TextStyle(
+                        fontSize: 15,
+                        color: Colors.black,
+                      ),
+                    ),
+                    border: InputBorder.none,
+                    hintText: 'ຄົ້ນຫາ..',
+                  ),
                 ),
               )
             : Text(
@@ -436,14 +442,16 @@ class _EmployeeScreensState extends State<EmployeeScreens> {
                                               CrossAxisAlignment.start,
                                           children: [
                                             Text(
-                                              employee.name,
+                                              'ຊື່: ${employee.name}',
                                               style: GoogleFonts.notoSansLao(
-                                                  fontSize: 15),
+                                                  fontSize: 15,
+                                                  fontWeight: FontWeight.bold),
                                             ),
                                             Text(
                                               "ຕໍາແໜ່ງ: ${position?.name ?? 'ບໍ່ມີຂໍ້ມູນ'}",
                                               style: GoogleFonts.notoSansLao(
-                                                  fontSize: 15),
+                                                fontSize: 15,
+                                              ),
                                             ),
                                             Text(
                                               "ພາກວິຊາ: ${department?.name ?? 'ບໍ່ມີຂໍ້ມູນ'}",
@@ -480,7 +488,9 @@ class _EmployeeScreensState extends State<EmployeeScreens> {
                                           color: Colors.orangeAccent,
                                           onPressed: () => _update(employee.id),
                                           icon: const FaIcon(
-                                              FontAwesomeIcons.penToSquare),
+                                            FontAwesomeIcons.penToSquare,
+                                            size: 20,
+                                          ),
                                         ),
                                         IconButton(
                                           color: Colors.redAccent,
@@ -504,7 +514,9 @@ class _EmployeeScreensState extends State<EmployeeScreens> {
                                             );
                                           },
                                           icon: const FaIcon(
-                                              FontAwesomeIcons.trashCan),
+                                            FontAwesomeIcons.trashCan,
+                                            size: 20,
+                                          ),
                                         ),
                                       ],
                                     ),

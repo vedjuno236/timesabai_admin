@@ -23,20 +23,7 @@ class _UsersOrdersScreenState extends State<UsersOrdersScreen> {
   String _day = DateFormat('dd').format(DateTime.now());
   bool _isMonthSelected = false;
 
-  // Future<void> _selectDate(BuildContext context) async {
-  //   final DateTime? picked = await showDatePicker(
-  //       context: context,
-  //       initialDate: _selectedDate,
-  //       firstDate: DateTime(2000),
-  //       lastDate: DateTime.now());
-  //   if (picked != null && picked != _selectedDate) {
-  //     setState(() {
-  //       _selectedDate = picked;
-  //       _day = DateFormat('dd').format(picked);
-  //       _isMonthSelected = false;
-  //     });
-  //   }
-  // }
+
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
@@ -515,7 +502,6 @@ class _UsersOrdersScreenState extends State<UsersOrdersScreen> {
                   MaterialPageRoute(
                     builder: (context) => ReportMonthRecord(
                       searchName: _searchName,
-                      searchStatus: _searchQuery,
                       monthDate: _selectedMonth,
                     ),
                   ),
@@ -533,7 +519,6 @@ class _UsersOrdersScreenState extends State<UsersOrdersScreen> {
                   MaterialPageRoute(
                     builder: (context) => ReportDayRecord(
                       searchName: _searchName,
-                      searchStatus: _searchQuery,
                       dayDate: _selectedDate,
                     ),
                   ),

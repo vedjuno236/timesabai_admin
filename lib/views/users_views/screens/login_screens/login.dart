@@ -83,7 +83,7 @@ class _LoginState extends State<Login> {
                         textAlign: TextAlign.right,
                       ),
                     ),
-                    SizedBox(height: 5),
+                    const SizedBox(height: 5),
                     TextFormField(
                       controller: emailController,
                       cursorColor: Colors.white,

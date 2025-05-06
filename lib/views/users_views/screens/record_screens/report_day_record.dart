@@ -10,14 +10,10 @@ import 'package:printing/printing.dart';
 
 class ReportDayRecord extends StatefulWidget {
   final String searchName;
-  final String searchStatus;
   final DateTime? dayDate;
 
   const ReportDayRecord(
-      {super.key,
-      required this.searchName,
-      required this.searchStatus,
-      required this.dayDate});
+      {super.key, required this.searchName, required this.dayDate});
 
   @override
   State<ReportDayRecord> createState() => _ReportEmployeeState();
@@ -55,13 +51,15 @@ class _ReportEmployeeState extends State<ReportDayRecord> {
     for (var employeeDoc in employeeSnapshot.docs) {
       final employeeDataMap = employeeDoc.data() as Map<String, dynamic>;
       final employeeName = employeeDataMap['name'] ?? 'ບໍ່ມີຂໍ້ມູນ';
-
+      bool matchesName = true;
       // Check if we're searching by name
-      if (widget.searchName.isNotEmpty && employeeName != widget.searchName) {
-        continue; // Skip if name doesn't match
+      if (widget.searchName.isNotEmpty &&
+          !employeeName
+              .toLowerCase()
+              .contains(widget.searchName.toLowerCase())) {
+        matchesName = false;
       }
 
-      // Fetch employee records from the 'Record' subcollection for the target date
       final recordSnapshot = await employeeDoc.reference
           .collection('Record')
           .where('date',
@@ -71,73 +69,99 @@ class _ReportEmployeeState extends State<ReportDayRecord> {
               isLessThan: Timestamp.fromDate(DateTime(
                   targetDate.year, targetDate.month, targetDate.day + 1)))
           .get();
+      final leaveSnapshot =
+          await employeeDoc.reference.collection('Leave').get();
 
       bool hasRecord = false;
+      bool isOnLeave = false;
+      for (var leaveDoc in leaveSnapshot.docs) {
+        final leaveData = leaveDoc.data() as Map<String, dynamic>;
+        final leaveStart = (leaveData['fromDate'] as Timestamp?)?.toDate();
+        final leaveEnd = (leaveData['toDate'] as Timestamp?)?.toDate();
 
-      // Loop through records to find matching date and status
+        if (leaveStart != null && leaveEnd != null) {
+          if (targetDate.isAfter(leaveStart.subtract(Duration(days: 1))) &&
+              targetDate.isBefore(leaveEnd.add(Duration(days: 1)))) {
+            isOnLeave = true;
+            break;
+          }
+        }
+      }
       for (var recordDoc in recordSnapshot.docs) {
         final recordData = recordDoc.data() as Map<String, dynamic>;
 
         // Check and replace missing or empty data with '----/----'
-        final checkInAM = (recordData['clockInAM'] == null ||
+        final clockInAM = (recordData['clockInAM'] == null ||
                 recordData['clockInAM'] == 'ບໍ່ມີຂໍ້ມູນ' ||
                 (recordData['clockInAM'] is String &&
                     recordData['clockInAM'].isEmpty))
-            ? '----/----'
+            ? '------'
             : recordData['clockInAM'];
-        final checkOutAM = (recordData['clockOutAM'] == null ||
+        final clockOutAM = (recordData['clockOutAM'] == null ||
                 recordData['clockOutAM'] == 'ບໍ່ມີຂໍ້ມູນ' ||
                 (recordData['clockOutAM'] is String &&
                     recordData['clockOutAM'].isEmpty))
-            ? '----/----'
+            ? '------'
             : recordData['clockOutAM'];
-        final checkInPM = (recordData['clockInPM'] == null ||
+        final clockInPM = (recordData['clockInPM'] == null ||
                 recordData['clockInPM'] == 'ບໍ່ມີຂໍ້ມູນ' ||
                 (recordData['clockInPM'] is String &&
                     recordData['clockInPM'].isEmpty))
-            ? '----/----'
+            ? '------'
             : recordData['clockInPM'];
-        final checkOutPM = (recordData['clockOutPM'] == null ||
+        final clockOutPM = (recordData['clockOutPM'] == null ||
                 recordData['clockOutPM'] == 'ບໍ່ມີຂໍ້ມູນ' ||
                 (recordData['clockOutPM'] is String &&
                     recordData['clockOutPM'].isEmpty))
-            ? '----/----'
+            ? '------'
             : recordData['clockOutPM'];
         // Determine status based on clockInAM and clockInPM
         String status = recordData['status'] ?? 'ບໍ່ມີຂໍ້ມູນ';
-        if (checkInPM == '----/----' && (checkInAM != '----/----')) {
+
+        if (isOnLeave) {
+          if (clockInAM == '------' &&
+              clockOutAM == '------' &&
+              clockInPM == '------' &&
+              clockOutPM == '------') {
+            status = 'ລາພັກ';
+          } else if ((clockInAM != '------' && clockOutAM != '------') ||
+              (clockInPM != '------' && clockOutPM != '------')) {
+            status = 'ລາພັກ 1 ຕອນ'; // Partial leave day
+          }
+        } else if ((clockInAM == '------' &&
+                (clockOutAM != '------' || clockOutPM != '------')) ||
+            (clockInPM == '------' &&
+                (clockOutAM != '------' || clockOutPM != '------'))) {
           status = 'ມາວຽກ1ຕອນ';
         }
         print('  Final status: $status');
 
-        // Check if status matches search criteria
-        if (widget.searchStatus.isNotEmpty && status != widget.searchStatus) {
-          continue; // Skip if status doesn't match
-        }
-
         hasRecord = true;
 
-        // Add record data
-        employeeData.add({
-          'name': employeeName,
-          'clockInAM': checkInAM,
-          'clockOutAM': checkOutAM,
-          'clockInPM': checkInPM,
-          'clockOutPM': checkOutPM,
-          'status': status,
-          'date': formattedTargetDate,
-        });
+        if (widget.searchName.isEmpty ||
+            employeeName
+                .toLowerCase()
+                .contains(widget.searchName.toLowerCase())) {
+          employeeData.add({
+            'name': employeeName,
+            'clockInAM': clockInAM,
+            'clockOutAM': clockOutAM,
+            'clockInPM': clockInPM,
+            'clockOutPM': clockOutPM,
+            'status': status,
+            'date': formattedTargetDate,
+          });
+        }
       }
 
       if (!hasRecord) {
-        // Only add the employee if searchStatus is empty or matches "ຂາດວຽກ"
-        if (widget.searchStatus.isEmpty || widget.searchStatus == 'ຂາດວຽກ') {
+        if (widget.searchName.isEmpty || widget.searchName == 'ຂາດວຽກ') {
           employeeData.add({
             'name': employeeName,
-            'clockInAM': '----/----',
-            'clockOutAM': '----/----',
-            'clockInPM': '----/----',
-            'clockOutPM': '----/----',
+            'clockInAM': '------',
+            'clockOutAM': '------',
+            'clockInPM': '------',
+            'clockOutPM': '------',
             'status': 'ຂາດວຽກ',
             'date': formattedTargetDate,
           });
@@ -235,7 +259,7 @@ class _ReportEmployeeState extends State<ReportDayRecord> {
                       pw.Container(
                         alignment: pw.Alignment.centerLeft,
                         child: pw.Text(
-                          'ລາຍງານສະຖານະ: ${widget.searchStatus.isEmpty ? 'ທັງໝົດ' : widget.searchStatus}',
+                          'ລາຍງານສະຖານະ: ${widget.searchName.isEmpty ? 'ທັງໝົດ' : widget.searchName}',
                           style: pw.TextStyle(
                             font: font1,
                             fontSize: 15,
@@ -382,9 +406,14 @@ class _ReportEmployeeState extends State<ReportDayRecord> {
                                           : entry['status'] == 'ມາວຽກຊ້າ'
                                               ? PdfColors.pink
                                               : entry['status'] == 'ມາວຽກ1ຕອນ'
-                                                  ? PdfColors
-                                                      .blueAccent // Add color for new status
-                                                  : PdfColors.black,
+                                                  ? PdfColors.blueAccent
+                                                  : entry['status'] == 'ລາພັກ'
+                                                      ? PdfColors.green
+                                                      : entry['status'] ==
+                                                              'ລາພັກ 1 ຕອນ'
+                                                          ? PdfColors
+                                                              .greenAccent
+                                                          : PdfColors.black,
                                 ),
                                 textAlign: pw.TextAlign.center,
                               ),

@@ -457,7 +457,9 @@ class _UserScreensState extends State<UserScreens> {
                                               onPressed: () =>
                                                   _update(documentSnapshot),
                                               icon: const FaIcon(
-                                                  FontAwesomeIcons.penToSquare),
+                                                FontAwesomeIcons.penToSquare,
+                                                size: 20,
+                                              ),
                                             ),
                                             IconButton(
                                               color: Colors.redAccent,
@@ -485,7 +487,9 @@ class _UserScreensState extends State<UserScreens> {
                                                 );
                                               },
                                               icon: const FaIcon(
-                                                  FontAwesomeIcons.trashCan),
+                                                FontAwesomeIcons.trashCan,
+                                                size: 20,
+                                              ),
                                             )
                                           ],
                                         ),

@@ -380,12 +380,17 @@ class _BranchScreensState extends State<BranchScreens> {
                             child: TextField(
                               controller: _searchController,
                               onChanged: _onSearchChanged,
-                              decoration: const InputDecoration(
+                              decoration: InputDecoration(
                                 contentPadding:
                                     EdgeInsets.fromLTRB(16, 0, 16, 0),
-                                hintStyle: TextStyle(color: Colors.black),
+                                hintStyle: GoogleFonts.notoSansLao(
+                                  textStyle: const TextStyle(
+                                    fontSize: 15,
+                                    color: Colors.black,
+                                  ),
+                                ),
                                 border: InputBorder.none,
-                                hintText: 'Search..',
+                                hintText: 'ຄົ້ນຫາ..',
                               ),
                             ),
                           ),
@@ -527,7 +532,7 @@ class _BranchScreensState extends State<BranchScreens> {
                                           title: Text(
                                             "ສາຂາ : ${documentSnapshot['name']}",
                                             style: GoogleFonts.notoSansLao(
-                                              fontSize: 18,
+                                              fontSize: 15,
                                               fontWeight: FontWeight.w600,
                                               color: Colors.black,
                                             ),
@@ -535,7 +540,7 @@ class _BranchScreensState extends State<BranchScreens> {
                                           subtitle: Text(
                                             "ພາກວີຊາ : ${departmentName}",
                                             style: GoogleFonts.notoSansLao(
-                                              fontSize: 18,
+                                              fontSize: 15,
                                               fontWeight: FontWeight.w600,
                                               color: Colors.black,
                                             ),
@@ -549,8 +554,10 @@ class _BranchScreensState extends State<BranchScreens> {
                                                   onPressed: () =>
                                                       _update(documentSnapshot),
                                                   icon: const FaIcon(
-                                                      FontAwesomeIcons
-                                                          .penToSquare),
+                                                    FontAwesomeIcons
+                                                        .penToSquare,
+                                                    size: 20,
+                                                  ),
                                                 ),
                                                 IconButton(
                                                   color: Colors.redAccent,
@@ -581,8 +588,9 @@ class _BranchScreensState extends State<BranchScreens> {
                                                     );
                                                   },
                                                   icon: const FaIcon(
-                                                      FontAwesomeIcons
-                                                          .trashCan),
+                                                    FontAwesomeIcons.trashCan,
+                                                    size: 20,
+                                                  ),
                                                 )
                                               ],
                                             ),

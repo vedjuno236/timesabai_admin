@@ -63,8 +63,7 @@ class _HomeScreensState extends State<HomeScreens> {
     countTodayLeaveDay();
     countMonthLeaves(_selectedMonth!);
     DateTime now = DateTime.now();
-    _selectedMonth =
-        DateTime(now.year, now.month, 1); // Default to current month
+    _selectedMonth = DateTime(now.year, now.month, 1);
     countMonthRecords(_selectedMonth!);
   }
 
@@ -164,8 +163,7 @@ class _HomeScreensState extends State<HomeScreens> {
           .get();
 
       setState(() {
-        leaveMonthCount =
-            snapshot.size; // Update the count based on selected month
+        leaveMonthCount = snapshot.size;
       });
     } catch (e) {
       print("Error fetching records count: $e");
@@ -188,7 +186,7 @@ class _HomeScreensState extends State<HomeScreens> {
           .get();
 
       setState(() {
-        leaveCount = snapshot.size; // อัปเดตค่า recordCount
+        leaveCount = snapshot.size;
       });
     } catch (e) {
       print("Error fetching the records count: $e");
@@ -413,10 +411,13 @@ class _HomeScreensState extends State<HomeScreens> {
                           decoration: const BoxDecoration(
                               color: Colors.white, shape: BoxShape.circle),
                           child: const CircleAvatar(
-                            radius: 28,
-                            backgroundColor: Colors.transparent,
-                            backgroundImage:
-                                AssetImage('assets/profile.jpg'),
+                            radius: 35,
+                            backgroundColor: Colors.white,
+                            child: CircleAvatar(
+                              radius: 30,
+                              backgroundColor: Colors.transparent,
+                              backgroundImage: AssetImage('assets/profile.jpg'),
+                            ),
                           ),
                         ),
                         const SizedBox(width: 12),
@@ -427,7 +428,7 @@ class _HomeScreensState extends State<HomeScreens> {
                               fontSize: 20,
                               fontWeight: FontWeight.w600),
                         ),
-                        Spacer(),
+                        const Spacer(),
                         IconButton(
                           color: Colors.white,
                           onPressed: () {
@@ -760,10 +761,12 @@ class _HomeScreensState extends State<HomeScreens> {
               ),
               GridView.count(
                 crossAxisCount: 2,
+                crossAxisSpacing: 5,
+                mainAxisSpacing: 5,
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
                 childAspectRatio: 1.2,
-                padding: const EdgeInsets.all(8),
+                padding: const EdgeInsets.all(10),
                 children: [
                   for (int i = 0; i < folders.length; i++)
                     InkWell(
@@ -832,7 +835,7 @@ class _HomeScreensState extends State<HomeScreens> {
                                 Text(
                                   "${folders[i].folderName}",
                                   style: GoogleFonts.notoSansLao(
-                                      fontSize: 18,
+                                      fontSize: 15,
                                       fontWeight: FontWeight.w600),
                                 ),
                               ],
@@ -847,7 +850,7 @@ class _HomeScreensState extends State<HomeScreens> {
                             child: const Icon(
                               Icons.folder,
                               color: Colors.white,
-                              size: 30,
+                              size: 20,
                             ),
                           ),
                         ],

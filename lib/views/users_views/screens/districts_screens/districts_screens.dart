@@ -395,12 +395,17 @@ class _DistrictsScreensState extends State<DistrictsScreens> {
                             child: TextField(
                               controller: _searchController,
                               onChanged: _onSearchChanged,
-                              decoration: const InputDecoration(
+                              decoration: InputDecoration(
                                 contentPadding:
                                     EdgeInsets.fromLTRB(16, 0, 16, 0),
-                                hintStyle: TextStyle(color: Colors.black),
+                                hintStyle: GoogleFonts.notoSansLao(
+                                  textStyle: const TextStyle(
+                                    fontSize: 15,
+                                    color: Colors.black,
+                                  ),
+                                ),
                                 border: InputBorder.none,
-                                hintText: 'Search..',
+                                hintText: 'ຄົ້ນຫາ..',
                               ),
                             ),
                           ),
@@ -541,7 +546,7 @@ class _DistrictsScreensState extends State<DistrictsScreens> {
                                           title: Text(
                                             "ເມືອງ : ${documentSnapshot['name']}",
                                             style: GoogleFonts.notoSansLao(
-                                              fontSize: 18,
+                                              fontSize: 15,
                                               fontWeight: FontWeight.w600,
                                               color: Colors.black,
                                             ),
@@ -549,7 +554,7 @@ class _DistrictsScreensState extends State<DistrictsScreens> {
                                           subtitle: Text(
                                             "ແຂວງ : ${departmentName}",
                                             style: GoogleFonts.notoSansLao(
-                                              fontSize: 18,
+                                              fontSize: 15,
                                               fontWeight: FontWeight.w600,
                                               color: Colors.black,
                                             ),
@@ -563,8 +568,10 @@ class _DistrictsScreensState extends State<DistrictsScreens> {
                                                   onPressed: () =>
                                                       _update(documentSnapshot),
                                                   icon: const FaIcon(
-                                                      FontAwesomeIcons
-                                                          .penToSquare),
+                                                    FontAwesomeIcons
+                                                        .penToSquare,
+                                                    size: 20,
+                                                  ),
                                                 ),
                                                 IconButton(
                                                   color: Colors.redAccent,
@@ -595,8 +602,9 @@ class _DistrictsScreensState extends State<DistrictsScreens> {
                                                     );
                                                   },
                                                   icon: const FaIcon(
-                                                      FontAwesomeIcons
-                                                          .trashCan),
+                                                    FontAwesomeIcons.trashCan,
+                                                    size: 20,
+                                                  ),
                                                 )
                                               ],
                                             ),
