@@ -261,9 +261,9 @@ class _EmployeeLeaveSerceenState extends State<EmployeeLeaveSerceen> {
                                                           .data()
                                                       as Map<String, dynamic>;
                                               List<dynamic> imageUrls =
-                                                  record['imageUrl'];
-
-                                              // logger.d(record);
+                                                  record['imageUrl'] is List
+                                                      ? record['imageUrl']
+                                                      : [record['imageUrl']];
 
                                               return ExpansionTile(
                                                 title: Text(
@@ -290,8 +290,7 @@ class _EmployeeLeaveSerceenState extends State<EmployeeLeaveSerceen> {
                                                           'ຈາກວັນທີ: ${DateFormat.yMMMMEEEEd().format((record['fromDate'] as Timestamp).toDate())}',
                                                           style: GoogleFonts
                                                               .notoSansLao(
-                                                            fontSize: 15,
-                                                          ),
+                                                                  fontSize: 15),
                                                         ),
                                                         const SizedBox(
                                                             height: 5),
@@ -299,8 +298,7 @@ class _EmployeeLeaveSerceenState extends State<EmployeeLeaveSerceen> {
                                                           'ວັນທີສີ້ນສຸດ: ${DateFormat.yMMMMEEEEd().format((record['toDate'] as Timestamp).toDate())}',
                                                           style: GoogleFonts
                                                               .notoSansLao(
-                                                            fontSize: 15,
-                                                          ),
+                                                                  fontSize: 15),
                                                         ),
                                                         SizedBox(height: 5),
                                                         Text(
@@ -382,7 +380,6 @@ class _EmployeeLeaveSerceenState extends State<EmployeeLeaveSerceen> {
                                                                   onTapConfirm:
                                                                       () async {
                                                                     try {
-                                                                      // Reference the specific document to delete within the 'Leave' collection
                                                                       await FirebaseFirestore
                                                                           .instance
                                                                           .collection(
@@ -405,7 +402,6 @@ class _EmployeeLeaveSerceenState extends State<EmployeeLeaveSerceen> {
                                                                                 Text('ການລາພັກຖືກລົບສຳເລັດ')),
                                                                       );
                                                                     } catch (e) {
-                                                                      // Handle any errors during deletion
                                                                       Navigator.pop(
                                                                           context);
                                                                       ScaffoldMessenger.of(
@@ -507,11 +503,9 @@ class _EmployeeLeaveSerceenState extends State<EmployeeLeaveSerceen> {
                                                                             stackTrace) {
                                                                       return Text(
                                                                         'ບໍ່ມີຮູບພາບ',
-                                                                        style: GoogleFonts
-                                                                            .notoSansLao(
-                                                                          fontSize:
-                                                                              15,
-                                                                        ),
+                                                                        style: GoogleFonts.notoSansLao(
+                                                                            fontSize:
+                                                                                15),
                                                                       );
                                                                     },
                                                                   ),
@@ -552,7 +546,6 @@ class _EmployeeLeaveSerceenState extends State<EmployeeLeaveSerceen> {
                                                                 EdgeInsets.all(
                                                                     8.0),
                                                             color: Colors.grey,
-                                                            // Example background for the tap area
                                                             child: Row(
                                                               children: [
                                                                 const Icon(
