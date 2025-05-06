@@ -3,6 +3,7 @@ import 'package:admin_timesabai/views/users_views/screens/provinces_screens/prov
 import 'package:admin_timesabai/views/users_views/screens/settings/settings_stystem.dart';
 import 'package:admin_timesabai/views/users_views/screens/type_leave/type_leave.dart';
 import 'package:admin_timesabai/views/users_views/screens/user_screens/user_screens.dart';
+import 'package:admin_timesabai/views/widget/date_month_year/shared/month_picker.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -558,41 +559,148 @@ class _HomeScreensState extends State<HomeScreens> {
                       padding: const EdgeInsets.all(10.0),
                       child: GestureDetector(
                         onTap: () async {
-                          final picked = await SimpleMonthYearPicker
-                              .showMonthYearPickerDialog(
-                            context: context,
-                            titleTextStyle: GoogleFonts.notoSansLao(
-                              textStyle: const TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xFF1230AE),
-                              ),
-                            ),
-                            monthTextStyle: GoogleFonts.notoSansLao(
-                              textStyle: const TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xFF1230AE),
-                              ),
-                            ),
-                            yearTextStyle: GoogleFonts.notoSansLao(
-                              textStyle: const TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xFF1230AE),
-                              ),
-                            ),
-                            disableFuture: true,
-                          );
+                          //   final picked = await SimpleMonthYearPicker
+                          //       .showMonthYearPickerDialog(
+                          //     context: context,
+                          //     titleTextStyle: GoogleFonts.notoSansLao(
+                          //       textStyle: const TextStyle(
+                          //         fontSize: 15,
+                          //         fontWeight: FontWeight.bold,
+                          //         color: Color(0xFF1230AE),
+                          //       ),
+                          //     ),
+                          //     monthTextStyle: GoogleFonts.notoSansLao(
+                          //       textStyle: const TextStyle(
+                          //         fontSize: 15,
+                          //         fontWeight: FontWeight.bold,
+                          //         color: Color(0xFF1230AE),
+                          //       ),
+                          //     ),
+                          //     yearTextStyle: GoogleFonts.notoSansLao(
+                          //       textStyle: const TextStyle(
+                          //         fontSize: 15,
+                          //         fontWeight: FontWeight.bold,
+                          //         color: Color(0xFF1230AE),
+                          //       ),
+                          //     ),
+                          //     disableFuture: true,
+                          //   );
 
-                          if (picked != null && picked != _selectedMonth) {
-                            setState(() {
-                              _selectedMonth = picked;
-                            });
-                            countMonthLeaves(picked);
-                            countMonthRecords(
-                                picked); // Fetch records count for the selected month
-                          }
+                          //   if (picked != null && picked != _selectedMonth) {
+                          //     setState(() {
+                          //       _selectedMonth = picked;
+                          //     });
+                          //     countMonthLeaves(picked);
+                          //     countMonthRecords(
+                          //         picked); // Fetch records count for the selected month
+                          //   }
+                          // },
+                          showDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                              DateTime now = DateTime.now();
+                              DateTime maxDate =
+                                  DateTime(now.year, now.month + 1, 0);
+                              DateTime? tempSelectedMonth = _selectedMonth;
+                              return AlertDialog(
+                                elevation: 2,
+                                shadowColor: Colors.blue,
+                                backgroundColor: Colors.white,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(15.0),
+                                ),
+                                content: SizedBox(
+                                  height: 300,
+                                  width: 450,
+                                  child: MonthPicker(
+                                    selectedCellDecoration: const BoxDecoration(
+                                      color: Colors.blue,
+                                      shape: BoxShape.circle,
+                                    ),
+                                    selectedCellTextStyle:
+                                        GoogleFonts.notoSansLao(
+                                      fontSize: 14,
+                                    ),
+                                    enabledCellsTextStyle:
+                                        GoogleFonts.notoSansLao(
+                                      fontSize: 14,
+                                    ),
+                                    disabledCellsTextStyle:
+                                        GoogleFonts.notoSansLao(
+                                            fontSize: 14, color: Colors.grey),
+                                    currentDateTextStyle:
+                                        GoogleFonts.notoSansLao(
+                                      fontSize: 14,
+                                    ),
+                                    currentDateDecoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      border: Border.all(
+                                        width: 1,
+                                        color: Colors.black,
+                                      ),
+                                    ),
+                                    splashColor: Colors.blue,
+                                    slidersColor: Colors.black,
+                                    centerLeadingDate: true,
+                                    minDate: DateTime(2000),
+                                    currentDate:
+                                        _selectedMonth ?? DateTime.now(),
+                                    selectedDate:
+                                        _selectedMonth ?? DateTime.now(),
+                                    onDateSelected: (month) {
+                                      setState(() {
+                                        tempSelectedMonth = month;
+                                      });
+                                    },
+                                    maxDate: maxDate,
+                                  ),
+                                ),
+                                actions: [
+                                  ElevatedButton(
+                                      onPressed: () => Navigator.pop(context),
+                                      style: ElevatedButton.styleFrom(
+                                        elevation: 0,
+                                        backgroundColor: Colors.grey,
+                                      ),
+                                      child: Text('ຍົກເລີກ',
+                                          style: GoogleFonts.notoSansLao(
+                                            textStyle: const TextStyle(
+                                              fontSize: 15,
+                                              color: Colors.black,
+                                            ),
+                                          ))),
+                                  ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                      elevation: 0,
+                                      backgroundColor: Colors.blue,
+                                    ),
+                                    onPressed: () {
+                                    
+                                      if (tempSelectedMonth != null &&
+                                          tempSelectedMonth != _selectedMonth) {
+                                        setState(() {
+                                          _selectedMonth = tempSelectedMonth!;
+                                        });
+                                        countMonthLeaves(tempSelectedMonth!);
+                                        countMonthRecords(
+                                            tempSelectedMonth!); // Fetch records count for the selected month
+                                      }
+                                      Navigator.pop(context);
+                                    },
+                                    child: Text(
+                                      'ຕົກລົງ',
+                                      style: GoogleFonts.notoSansLao(
+                                        textStyle: const TextStyle(
+                                          fontSize: 15,
+                                          color: Colors.black,
+                                        ),
+                                      ),
+                                    ),
+                                  )
+                                ],
+                              );
+                            },
+                          );
                         },
                         child: Container(
                           padding: const EdgeInsets.symmetric(

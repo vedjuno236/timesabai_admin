@@ -2,7 +2,6 @@ import 'package:admin_timesabai/service/notification/firebase_notification.dart'
 import 'package:admin_timesabai/service/notification/notificationhelper.dart';
 import 'package:admin_timesabai/views/users_views/screens/home_screens/home_screens.dart';
 import 'package:admin_timesabai/views/users_views/screens/login_screens/login.dart';
-import 'package:admin_timesabai/views/users_views/screens/login_screens/register_screens.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
@@ -10,7 +9,6 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/intl.dart';
 import 'package:lottie/lottie.dart';
-import 'package:widget_mask/widget_mask.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -85,12 +83,7 @@ class _SplashScreenState extends State<SplashScreen> {
   void initState() {
     super.initState();
     _checkTokenAndNavigate();
-    // Future.delayed(const Duration(seconds: 5), () {
-    //   Navigator.pushReplacement(
-    //     context,
-    //     MaterialPageRoute(builder: (context) => Login()),
-    //   );
-    // });
+  
   }
 
  Future<void> _checkTokenAndNavigate() async {
@@ -117,14 +110,12 @@ class _SplashScreenState extends State<SplashScreen> {
       backgroundColor: Colors.white,
       body: Center(
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center, // Center vertically
+          mainAxisAlignment: MainAxisAlignment.center, 
           children: [
             Lottie.network(
               "https://lottie.host/402b2330-0d9b-47e3-b998-73536ecd1af2/3yE7yI8AH9.json",
             ),
             const SizedBox(height: 20),
-
-           
           ],
         ),
       ),

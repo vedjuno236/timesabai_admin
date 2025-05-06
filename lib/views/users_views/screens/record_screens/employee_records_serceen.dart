@@ -1,6 +1,7 @@
 import 'package:admin_timesabai/views/users_views/screens/record_screens/report_day_record.dart';
 import 'package:admin_timesabai/views/users_views/screens/record_screens/report_month_record.dart';
 import 'package:admin_timesabai/views/users_views/screens/record_screens/report_name_records.dart';
+import 'package:admin_timesabai/views/widget/date_month_year/shared/month_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
@@ -23,36 +24,35 @@ class _UsersOrdersScreenState extends State<UsersOrdersScreen> {
   String _day = DateFormat('dd').format(DateTime.now());
   bool _isMonthSelected = false;
 
-
-  Future<void> _selectDate(BuildContext context) async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: _selectedDate,
-      firstDate: DateTime(2000),
-      lastDate: DateTime.now(),
-      builder: (BuildContext context, Widget? child) {
-        return Theme(
-          data: ThemeData.light().copyWith(
-            textTheme: TextTheme(
-              bodyLarge: GoogleFonts.notoSansLao(),
-              bodyMedium: GoogleFonts.notoSansLao(), // Apply Google Font here
-              labelLarge: GoogleFonts.notoSansLao(), // Style buttons and labels
-            ),
-            dialogBackgroundColor:
-                Colors.white, // Optional: Customize background
-          ),
-          child: child!,
-        );
-      },
-    );
-    if (picked != null && picked != _selectedDate) {
-      setState(() {
-        _selectedDate = picked;
-        _day = DateFormat('dd').format(picked);
-        _isMonthSelected = false;
-      });
-    }
-  }
+  // Future<void> _selectDate(BuildContext context) async {
+  //   final DateTime? picked = await showDatePicker(
+  //     context: context,
+  //     initialDate: _selectedDate,
+  //     firstDate: DateTime(2000),
+  //     lastDate: DateTime.now(),
+  //     builder: (BuildContext context, Widget? child) {
+  //       return Theme(
+  //         data: ThemeData.light().copyWith(
+  //           textTheme: TextTheme(
+  //             bodyLarge: GoogleFonts.notoSansLao(),
+  //             bodyMedium: GoogleFonts.notoSansLao(), // Apply Google Font here
+  //             labelLarge: GoogleFonts.notoSansLao(), // Style buttons and labels
+  //           ),
+  //           dialogBackgroundColor:
+  //               Colors.white, // Optional: Customize background
+  //         ),
+  //         child: child!,
+  //       );
+  //     },
+  //   );
+  //   if (picked != null && picked != _selectedDate) {
+  //     setState(() {
+  //       _selectedDate = picked;
+  //       _day = DateFormat('dd').format(picked);
+  //       _isMonthSelected = false;
+  //     });
+  //   }
+  // }
 
   final List<Color> colors = [
     Color(0xFF5AD1fA),
@@ -80,14 +80,13 @@ class _UsersOrdersScreenState extends State<UsersOrdersScreen> {
                   },
                   decoration: InputDecoration(
                     contentPadding: EdgeInsets.fromLTRB(16, 0, 16, 0),
-                    hintStyle: TextStyle(color: Colors.black),
-                    border: InputBorder.none,
-                    hintText: 'ຄົ້ນຫາຊື່ພະນັກງານ...',
-                    labelStyle: GoogleFonts.notoSansLao(
+                    hintStyle: GoogleFonts.notoSansLao(
                       textStyle: const TextStyle(
                         color: Colors.black, // You can set the color here
                       ),
                     ),
+                    border: InputBorder.none,
+                    hintText: 'ຄົ້ນຫາຊື່ພະນັກງານ...',
                   ),
                 ),
               )
@@ -121,41 +120,105 @@ class _UsersOrdersScreenState extends State<UsersOrdersScreen> {
                   padding: const EdgeInsets.all(10.0),
                   child: GestureDetector(
                     onTap: () async {
-                      final picked =
-                          await SimpleMonthYearPicker.showMonthYearPickerDialog(
+                      showDialog(
                         context: context,
-                        titleTextStyle: GoogleFonts.notoSansLao(
-                          textStyle: const TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF1230AE),
-                          ),
-                        ),
-                        monthTextStyle: GoogleFonts.notoSansLao(
-                          textStyle: const TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF1230AE),
-                          ),
-                        ),
-                        yearTextStyle: GoogleFonts.notoSansLao(
-                          textStyle: const TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF1230AE),
-                          ),
-                        ),
-                        disableFuture: true,
+                        builder: (BuildContext context) {
+                          DateTime now = DateTime.now();
+                          DateTime maxDate =
+                              DateTime(now.year, now.month + 1, 0);
+                          DateTime? tempSelectedMonth = _selectedMonth;
+                          return AlertDialog(
+                            elevation: 2,
+                            shadowColor: Colors.blue,
+                            backgroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(15.0),
+                            ),
+                            content: SizedBox(
+                              height: 300,
+                              width: 450,
+                              child: MonthPicker(
+                                selectedCellDecoration: const BoxDecoration(
+                                  color: Colors.blue,
+                                  shape: BoxShape.circle,
+                                ),
+                                selectedCellTextStyle: GoogleFonts.notoSansLao(
+                                  fontSize: 14,
+                                ),
+                                enabledCellsTextStyle: GoogleFonts.notoSansLao(
+                                  fontSize: 14,
+                                ),
+                                disabledCellsTextStyle: GoogleFonts.notoSansLao(
+                                    fontSize: 14, color: Colors.grey),
+                                currentDateTextStyle: GoogleFonts.notoSansLao(
+                                  fontSize: 14,
+                                ),
+                                currentDateDecoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    width: 1,
+                                    color: Colors.black,
+                                  ),
+                                ),
+                                splashColor: Colors.blue,
+                                slidersColor: Colors.black,
+                                centerLeadingDate: true,
+                                minDate: DateTime(2000),
+                                currentDate: _selectedMonth ?? DateTime.now(),
+                                selectedDate: _selectedMonth ?? DateTime.now(),
+                                onDateSelected: (month) {
+                                  setState(() {
+                                    tempSelectedMonth = month;
+                                  });
+                                },
+                                maxDate: maxDate,
+                              ),
+                            ),
+                            actions: [
+                              ElevatedButton(
+                                  onPressed: () => Navigator.pop(context),
+                                  style: ElevatedButton.styleFrom(
+                                    elevation: 0,
+                                    backgroundColor: Colors.grey,
+                                  ),
+                                  child: Text('ຍົກເລີກ',
+                                      style: GoogleFonts.notoSansLao(
+                                        textStyle: const TextStyle(
+                                          fontSize: 15,
+                                          color: Colors.black,
+                                        ),
+                                      ))),
+                              ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  elevation: 0,
+                                  backgroundColor: Colors.blue,
+                                ),
+                                onPressed: () {
+                                  if (tempSelectedMonth != null &&
+                                      tempSelectedMonth != _selectedMonth) {
+                                    setState(() {
+                                      _selectedMonth = tempSelectedMonth!;
+                                      _month = DateFormat('MMMM')
+                                          .format(_selectedMonth!);
+                                      _isMonthSelected = true;
+                                    });
+                                  }
+                                  Navigator.pop(context);
+                                },
+                                child: Text(
+                                  'ຕົກລົງ',
+                                  style: GoogleFonts.notoSansLao(
+                                    textStyle: const TextStyle(
+                                      fontSize: 15,
+                                      color: Colors.black,
+                                    ),
+                                  ),
+                                ),
+                              )
+                            ],
+                          );
+                        },
                       );
-
-                      if (picked != null && picked != _selectedMonth) {
-                        setState(() {
-                          _selectedMonth = picked; // Update selected month
-                          _month = DateFormat('MMMM').format(picked);
-                          _isMonthSelected =
-                              true; // We are now selecting a month
-                        });
-                      }
                     },
                     child: Container(
                       padding: const EdgeInsets.symmetric(
@@ -185,7 +248,88 @@ class _UsersOrdersScreenState extends State<UsersOrdersScreen> {
                 Padding(
                   padding: const EdgeInsets.all(10.0),
                   child: GestureDetector(
-                    onTap: () => _selectDate(context),
+                    onTap: () {
+                      showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                            DateTime now = DateTime.now();
+                            DateTime maxDate = DateTime(now.year, now.month + 1,
+                                0); // Last day of next month
+                            DateTime? tempSelectedDate =
+                                _selectedDate; // Change variable name to reflect day selection
+                            return AlertDialog(
+                              elevation: 2,
+                              shadowColor: Colors.blue,
+                              backgroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(15.0),
+                              ),
+                              content: SizedBox(
+                                height: 300,
+                                width: 450,
+                                child: CalendarDatePicker(
+                                  initialDate: _selectedDate ?? DateTime.now(),
+                                  firstDate: DateTime(2000),
+                                  lastDate: DateTime.now(),
+                                  onDateChanged: (date) {
+                                    setState(() {
+                                      tempSelectedDate = date;
+                                    });
+                                  },
+                                  selectableDayPredicate: (date) {
+                                    // Optional: Customize which days are selectable
+                                    return true;
+                                  },
+                                ),
+                              ),
+                              actions: [
+                                ElevatedButton(
+                                  onPressed: () => Navigator.pop(context),
+                                  style: ElevatedButton.styleFrom(
+                                    elevation: 0,
+                                    backgroundColor: Colors.grey,
+                                  ),
+                                  child: Text(
+                                    'ຍົກເລີກ',
+                                    style: GoogleFonts.notoSansLao(
+                                      textStyle: const TextStyle(
+                                        fontSize: 15,
+                                        color: Colors.black,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                    elevation: 0,
+                                    backgroundColor: Colors.blue,
+                                  ),
+                                  onPressed: () {
+                                    if (tempSelectedDate != null &&
+                                        tempSelectedDate != _selectedDate) {
+                                      setState(() {
+                                        _selectedDate = tempSelectedDate!;
+                                        _day = DateFormat('dd')
+                                            .format(_selectedDate!);
+                                        _isMonthSelected = true;
+                                      });
+                                    }
+                                    Navigator.pop(context);
+                                  },
+                                  child: Text(
+                                    'ຕົກລົງ',
+                                    style: GoogleFonts.notoSansLao(
+                                      textStyle: const TextStyle(
+                                        fontSize: 15,
+                                        color: Colors.black,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            );
+                          });
+                    },
                     child: Container(
                       padding: const EdgeInsets.symmetric(
                           horizontal: 10, vertical: 5),
@@ -356,7 +500,7 @@ class _UsersOrdersScreenState extends State<UsersOrdersScreen> {
                                                           .data()
                                                       as Map<String, dynamic>;
 
-                                                      print(record);
+                                              print(record);
                                               return ExpansionTile(
                                                 title: Text(
                                                   "ວັນທີ: ${DateFormat.yMMMMEEEEd().format((record['date'] as Timestamp).toDate())}",
@@ -396,7 +540,7 @@ class _UsersOrdersScreenState extends State<UsersOrdersScreen> {
                                                         ),
                                                         const SizedBox(
                                                             height: 5),
-                                                             Text(
+                                                        Text(
                                                           'ເວລາເຂົ້າຕອນແລງ: ${record['clockInPM']}',
                                                           style: GoogleFonts
                                                               .notoSansLao(
