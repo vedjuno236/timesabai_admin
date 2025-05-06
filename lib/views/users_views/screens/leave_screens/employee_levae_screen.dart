@@ -517,8 +517,14 @@ class _EmployeeLeaveSerceenState extends State<EmployeeLeaveSerceen> {
                                                                             exception,
                                                                         StackTrace?
                                                                             stackTrace) {
-                                                                      return const Text(
-                                                                          'Failed to load image');
+                                                                      return Text(
+                                                                        'ບໍ່ມີຮູບພາບ',
+                                                                        style: GoogleFonts
+                                                                            .notoSansLao(
+                                                                          fontSize:
+                                                                              15,
+                                                                        ),
+                                                                      );
                                                                     },
                                                                   ),
                                                                 ),

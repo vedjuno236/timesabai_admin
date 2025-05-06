@@ -215,8 +215,16 @@ class _ReportEmployeeState extends State<ReportDayLeave> {
                     context: context,
                     cellAlignment: pw.Alignment.center,
                     headerStyle: pw.TextStyle(
-                      font: font1, // Use bold font for headers
-                      fontSize: 10,
+                      font: font1,
+                      fontSize: 9,
+                    ),
+                    cellStyle: pw.TextStyle(
+                      font: font1,
+                      fontSize: 6,
+                    ),
+                    oddCellStyle: pw.TextStyle(
+                      font: font1,
+                      fontSize: 6,
                     ),
                     headers: [
                       'ຊື່ ແລະ ນາມສະກຸນ',
