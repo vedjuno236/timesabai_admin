@@ -6,6 +6,7 @@ import 'package:admin_timesabai/views/users_views/screens/user_screens/user_scre
 import 'package:admin_timesabai/views/widget/date_month_year/shared/month_picker.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
@@ -474,7 +475,12 @@ class _HomeScreensState extends State<HomeScreens> {
                     )
                   ],
                 ),
-              ),
+              ).animate().scaleXY(
+                  begin: 0,
+                  end: 1,
+                  delay: 300.ms,
+                  duration: 300.ms,
+                  curve: Curves.easeInOutCubic),
 
               Stack(
                 alignment: Alignment.center,
@@ -502,13 +508,23 @@ class _HomeScreensState extends State<HomeScreens> {
                         ],
                       ),
                     ),
-                  ),
+                  ).animate().scaleXY(
+                      begin: 0,
+                      end: 1,
+                      delay: 300.ms,
+                      duration: 300.ms,
+                      curve: Curves.easeInOutCubic),
                   // Profile Image
                   const CircleAvatar(
                     radius: 50,
                     backgroundImage: AssetImage(
                         'assets/profile.jpg'), // Replace with your image
-                  ),
+                  ).animate().scaleXY(
+                      begin: 0,
+                      end: 1,
+                      delay: 300.ms,
+                      duration: 300.ms,
+                      curve: Curves.easeInOutCubic),
                 ],
               ),
 
@@ -536,7 +552,12 @@ class _HomeScreensState extends State<HomeScreens> {
                     }).toList(),
                   ),
                 ),
-              ),
+              ).animate().scaleXY(
+                  begin: 0,
+                  end: 1,
+                  delay: 300.ms,
+                  duration: 300.ms,
+                  curve: Curves.easeInOutCubic),
               Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Divider(
@@ -559,42 +580,6 @@ class _HomeScreensState extends State<HomeScreens> {
                       padding: const EdgeInsets.all(10.0),
                       child: GestureDetector(
                         onTap: () async {
-                          //   final picked = await SimpleMonthYearPicker
-                          //       .showMonthYearPickerDialog(
-                          //     context: context,
-                          //     titleTextStyle: GoogleFonts.notoSansLao(
-                          //       textStyle: const TextStyle(
-                          //         fontSize: 15,
-                          //         fontWeight: FontWeight.bold,
-                          //         color: Color(0xFF1230AE),
-                          //       ),
-                          //     ),
-                          //     monthTextStyle: GoogleFonts.notoSansLao(
-                          //       textStyle: const TextStyle(
-                          //         fontSize: 15,
-                          //         fontWeight: FontWeight.bold,
-                          //         color: Color(0xFF1230AE),
-                          //       ),
-                          //     ),
-                          //     yearTextStyle: GoogleFonts.notoSansLao(
-                          //       textStyle: const TextStyle(
-                          //         fontSize: 15,
-                          //         fontWeight: FontWeight.bold,
-                          //         color: Color(0xFF1230AE),
-                          //       ),
-                          //     ),
-                          //     disableFuture: true,
-                          //   );
-
-                          //   if (picked != null && picked != _selectedMonth) {
-                          //     setState(() {
-                          //       _selectedMonth = picked;
-                          //     });
-                          //     countMonthLeaves(picked);
-                          //     countMonthRecords(
-                          //         picked); // Fetch records count for the selected month
-                          //   }
-                          // },
                           showDialog(
                             context: context,
                             builder: (BuildContext context) {
@@ -675,7 +660,6 @@ class _HomeScreensState extends State<HomeScreens> {
                                       backgroundColor: Colors.blue,
                                     ),
                                     onPressed: () {
-                                    
                                       if (tempSelectedMonth != null &&
                                           tempSelectedMonth != _selectedMonth) {
                                         setState(() {
@@ -730,18 +714,16 @@ class _HomeScreensState extends State<HomeScreens> {
                     ),
                   ],
                 ),
-              ),
+              ).animate().scaleXY(
+                  begin: 0,
+                  end: 1,
+                  delay: 300.ms,
+                  duration: 300.ms,
+                  curve: Curves.easeInOutCubic),
               Padding(
                 padding: const EdgeInsets.all(10.0),
                 child: Column(
                   children: [
-                    // Text(
-                    //   'ມາການເດືອນ ${_selectedMonth != null ? DateFormat('MMMM yyyy').format(_selectedMonth!) : "ເລືອກເດືອນ"}: $recordMonthCount/ຄົນ',
-                    //   style: GoogleFonts.notoSansLao(
-                    //     fontSize: 15,
-                    //     color: Colors.blueAccent.shade400,
-                    //   ),
-                    // ),
                     Text.rich(
                       TextSpan(
                         style: GoogleFonts.notoSansLao(
@@ -783,7 +765,12 @@ class _HomeScreensState extends State<HomeScreens> {
                     ),
                   ],
                 ),
-              ),
+              ).animate().scaleXY(
+                  begin: 0,
+                  end: 1,
+                  delay: 300.ms,
+                  duration: 300.ms,
+                  curve: Curves.easeInOutCubic),
               Row(
                 children: [
                   Center(
@@ -857,7 +844,12 @@ class _HomeScreensState extends State<HomeScreens> {
                     ],
                   ),
                 ],
-              ),
+              ).animate().scaleXY(
+                  begin: 0,
+                  end: 1,
+                  delay: 300.ms,
+                  duration: 300.ms,
+                  curve: Curves.easeInOutCubic),
 
               Padding(
                 padding: const EdgeInsets.all(10.0),
@@ -965,7 +957,10 @@ class _HomeScreensState extends State<HomeScreens> {
                       ),
                     ),
                 ],
-              ),
+              ).animate().fadeIn(duration: 400.ms, delay: 400.ms).move(
+                    begin: const Offset(-16, 0),
+                    curve: Curves.easeOutQuad,
+                  ),
             ],
           ),
         ),

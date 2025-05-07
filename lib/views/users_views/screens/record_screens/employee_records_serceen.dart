@@ -4,6 +4,7 @@ import 'package:admin_timesabai/views/users_views/screens/record_screens/report_
 import 'package:admin_timesabai/views/widget/date_month_year/shared/month_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
@@ -96,7 +97,12 @@ class _UsersOrdersScreenState extends State<UsersOrdersScreen> {
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
                     color: Colors.white),
-              ),
+              ).animate().scaleXY(
+                begin: 0,
+                end: 1,
+                delay: 500.ms,
+                duration: 500.ms,
+                curve: Curves.easeInOutCubic),
         iconTheme: const IconThemeData(color: Colors.white),
         centerTitle: true,
         actions: [
@@ -356,7 +362,12 @@ class _UsersOrdersScreenState extends State<UsersOrdersScreen> {
                   ),
                 ),
               ],
-            ),
+            ).animate().scaleXY(
+                begin: 0,
+                end: 1,
+                delay: 500.ms,
+                duration: 500.ms,
+                curve: Curves.easeInOutCubic),
             // buildSearchField(),
             SizedBox(height: 10),
             Expanded(
@@ -390,230 +401,249 @@ class _UsersOrdersScreenState extends State<UsersOrdersScreen> {
                       }
 
                       return Card(
-                          elevation: 0,
-                          color: Colors.white,
-                          child: Row(children: [
-                            Container(
-                              decoration: BoxDecoration(
-                                  color: colors[index % colors.length],
-                                  borderRadius: const BorderRadius.only(
-                                      topLeft: Radius.circular(12),
-                                      bottomLeft: Radius.circular(12))),
-                              height: 72,
-                              width: 15,
-                            ),
-                            Expanded(
-                              child: ExpansionTile(
-                                title: Text(
-                                  user['name'],
-                                  style: GoogleFonts.notoSansLao(
-                                    textStyle: const TextStyle(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.black,
+                              elevation: 0,
+                              color: Colors.white,
+                              child: Row(children: [
+                                Container(
+                                  decoration: BoxDecoration(
+                                      color: colors[index % colors.length],
+                                      borderRadius: const BorderRadius.only(
+                                          topLeft: Radius.circular(12),
+                                          bottomLeft: Radius.circular(12))),
+                                  height: 72,
+                                  width: 15,
+                                ),
+                                Expanded(
+                                  child: ExpansionTile(
+                                    title: Text(
+                                      user['name'],
+                                      style: GoogleFonts.notoSansLao(
+                                        textStyle: const TextStyle(
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.black,
+                                        ),
+                                      ),
                                     ),
+                                    children: [
+                                      StreamBuilder<QuerySnapshot>(
+                                        stream: FirebaseFirestore.instance
+                                            .collection('Employee')
+                                            .doc(userId)
+                                            .collection('Record')
+                                            .snapshots(),
+                                        builder: (context, orderSnapshot) {
+                                          if (orderSnapshot.connectionState ==
+                                              ConnectionState.waiting) {
+                                            return const Padding(
+                                              padding: EdgeInsets.all(8.0),
+                                              child: Center(
+                                                  child:
+                                                      CircularProgressIndicator()),
+                                            );
+                                          } else if (orderSnapshot.hasError) {
+                                            return Padding(
+                                              padding:
+                                                  const EdgeInsets.all(8.0),
+                                              child: Center(
+                                                  child: Text(
+                                                      'Error: ${orderSnapshot.error}')),
+                                            );
+                                          } else if (!orderSnapshot.hasData ||
+                                              orderSnapshot
+                                                  .data!.docs.isEmpty) {
+                                            return Padding(
+                                                padding: EdgeInsets.all(8.0),
+                                                child: Center(
+                                                  child: Text(
+                                                    'ບໍ່ມີຂໍໍມູນ.',
+                                                    style:
+                                                        GoogleFonts.notoSansLao(
+                                                      textStyle:
+                                                          const TextStyle(
+                                                        fontSize: 15,
+                                                        color: Colors.black,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ));
+                                          }
+
+                                          final orders =
+                                              orderSnapshot.data!.docs;
+                                          final filteredOrders =
+                                              orders.where((order) {
+                                            final date =
+                                                (order['date'] as Timestamp)
+                                                    .toDate();
+                                            if (_isMonthSelected) {
+                                              return date.month ==
+                                                      _selectedMonth.month &&
+                                                  date.year ==
+                                                      _selectedMonth.year;
+                                            } else {
+                                              return date.day ==
+                                                      _selectedDate.day &&
+                                                  date.month ==
+                                                      _selectedDate.month &&
+                                                  date.year ==
+                                                      _selectedDate.year;
+                                            }
+                                          }).toList();
+                                          final searchFilteredOrders =
+                                              filteredOrders.where((order) {
+                                            final status = order['status']
+                                                .toString()
+                                                .toLowerCase();
+                                            return status
+                                                .contains(_searchQuery);
+                                          }).toList();
+                                          print(
+                                              "Filtered orders count: ${filteredOrders.length}");
+
+                                          return Column(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.start,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              ListView.builder(
+                                                physics:
+                                                    const NeverScrollableScrollPhysics(),
+                                                shrinkWrap: true,
+                                                itemCount:
+                                                    searchFilteredOrders.length,
+                                                itemBuilder: (context, index) {
+                                                  final record =
+                                                      searchFilteredOrders[
+                                                                  index]
+                                                              .data()
+                                                          as Map<String,
+                                                              dynamic>;
+
+                                                  print(record);
+                                                  return ExpansionTile(
+                                                    title: Text(
+                                                      "ວັນທີ: ${DateFormat.yMMMMEEEEd().format((record['date'] as Timestamp).toDate())}",
+                                                      style: GoogleFonts
+                                                          .notoSansLao(
+                                                        textStyle:
+                                                            const TextStyle(
+                                                          fontSize: 15,
+                                                          color: Colors.black,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    children: [
+                                                      Padding(
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .all(20.0),
+                                                        child: Column(
+                                                          crossAxisAlignment:
+                                                              CrossAxisAlignment
+                                                                  .start,
+                                                          children: [
+                                                            Text(
+                                                              'ເວລາເຂົ້າຕອນເຊົ້າ: ${record['clockInAM']}',
+                                                              style: GoogleFonts
+                                                                  .notoSansLao(
+                                                                fontSize: 15,
+                                                              ),
+                                                            ),
+                                                            const SizedBox(
+                                                                height: 5),
+                                                            Text(
+                                                              'ເວລາອອກຕອນເຊົ້າ: ${record['clockOutAM']}',
+                                                              style: GoogleFonts
+                                                                  .notoSansLao(
+                                                                fontSize: 15,
+                                                              ),
+                                                            ),
+                                                            const SizedBox(
+                                                                height: 5),
+                                                            Text(
+                                                              'ເວລາເຂົ້າຕອນແລງ: ${record['clockInPM']}',
+                                                              style: GoogleFonts
+                                                                  .notoSansLao(
+                                                                fontSize: 15,
+                                                              ),
+                                                            ),
+                                                            const SizedBox(
+                                                                height: 5),
+                                                            Text(
+                                                              'ເວລາອອກຕອນແລງ: ${record['clockOutPM']}',
+                                                              style: GoogleFonts
+                                                                  .notoSansLao(
+                                                                fontSize: 15,
+                                                              ),
+                                                            ),
+                                                            const SizedBox(
+                                                                height: 5),
+                                                            Text(
+                                                              'ຕໍາແໜ່ງເຂົ້າ: ${record['checkOutLocation']}',
+                                                              style: GoogleFonts
+                                                                  .notoSansLao(
+                                                                fontSize: 15,
+                                                              ),
+                                                            ),
+                                                            SizedBox(height: 5),
+                                                            Text(
+                                                              'ຕໍາແໜ່ງອອກ: ${record['checkInLocation']}',
+                                                              style: GoogleFonts
+                                                                  .notoSansLao(
+                                                                fontSize: 15,
+                                                              ),
+                                                            ),
+                                                            SizedBox(height: 5),
+                                                            TextButton(
+                                                              onPressed: () {
+                                                                print(
+                                                                    'Button pressed');
+                                                              },
+                                                              style: TextButton
+                                                                  .styleFrom(
+                                                                backgroundColor:
+                                                                    getStatusColor(
+                                                                        record[
+                                                                            'status']),
+                                                                foregroundColor:
+                                                                    Colors
+                                                                        .white,
+                                                              ),
+                                                              child: Text(
+                                                                'ສະຖານະ: ${record['status']}',
+                                                                style: GoogleFonts
+                                                                    .notoSansLao(
+                                                                        fontSize:
+                                                                            15,
+                                                                        color: Colors
+                                                                            .white),
+                                                              ),
+                                                            ),
+                                                            SizedBox(height: 5),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  );
+                                                },
+                                              ),
+                                            ],
+                                          );
+                                        },
+                                      ),
+                                    ],
                                   ),
                                 ),
-                                children: [
-                                  StreamBuilder<QuerySnapshot>(
-                                    stream: FirebaseFirestore.instance
-                                        .collection('Employee')
-                                        .doc(userId)
-                                        .collection('Record')
-                                        .snapshots(),
-                                    builder: (context, orderSnapshot) {
-                                      if (orderSnapshot.connectionState ==
-                                          ConnectionState.waiting) {
-                                        return const Padding(
-                                          padding: EdgeInsets.all(8.0),
-                                          child: Center(
-                                              child:
-                                                  CircularProgressIndicator()),
-                                        );
-                                      } else if (orderSnapshot.hasError) {
-                                        return Padding(
-                                          padding: const EdgeInsets.all(8.0),
-                                          child: Center(
-                                              child: Text(
-                                                  'Error: ${orderSnapshot.error}')),
-                                        );
-                                      } else if (!orderSnapshot.hasData ||
-                                          orderSnapshot.data!.docs.isEmpty) {
-                                        return Padding(
-                                            padding: EdgeInsets.all(8.0),
-                                            child: Center(
-                                              child: Text(
-                                                'ບໍ່ມີຂໍໍມູນ.',
-                                                style: GoogleFonts.notoSansLao(
-                                                  textStyle: const TextStyle(
-                                                    fontSize: 15,
-                                                    color: Colors.black,
-                                                  ),
-                                                ),
-                                              ),
-                                            ));
-                                      }
-
-                                      final orders = orderSnapshot.data!.docs;
-                                      final filteredOrders =
-                                          orders.where((order) {
-                                        final date =
-                                            (order['date'] as Timestamp)
-                                                .toDate();
-                                        if (_isMonthSelected) {
-                                          return date.month ==
-                                                  _selectedMonth.month &&
-                                              date.year == _selectedMonth.year;
-                                        } else {
-                                          return date.day ==
-                                                  _selectedDate.day &&
-                                              date.month ==
-                                                  _selectedDate.month &&
-                                              date.year == _selectedDate.year;
-                                        }
-                                      }).toList();
-                                      final searchFilteredOrders =
-                                          filteredOrders.where((order) {
-                                        final status = order['status']
-                                            .toString()
-                                            .toLowerCase();
-                                        return status.contains(_searchQuery);
-                                      }).toList();
-                                      print(
-                                          "Filtered orders count: ${filteredOrders.length}");
-
-                                      return Column(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.start,
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          ListView.builder(
-                                            physics:
-                                                const NeverScrollableScrollPhysics(),
-                                            shrinkWrap: true,
-                                            itemCount:
-                                                searchFilteredOrders.length,
-                                            itemBuilder: (context, index) {
-                                              final record =
-                                                  searchFilteredOrders[index]
-                                                          .data()
-                                                      as Map<String, dynamic>;
-
-                                              print(record);
-                                              return ExpansionTile(
-                                                title: Text(
-                                                  "ວັນທີ: ${DateFormat.yMMMMEEEEd().format((record['date'] as Timestamp).toDate())}",
-                                                  style:
-                                                      GoogleFonts.notoSansLao(
-                                                    textStyle: const TextStyle(
-                                                      fontSize: 15,
-                                                      color: Colors.black,
-                                                    ),
-                                                  ),
-                                                ),
-                                                children: [
-                                                  Padding(
-                                                    padding:
-                                                        const EdgeInsets.all(
-                                                            20.0),
-                                                    child: Column(
-                                                      crossAxisAlignment:
-                                                          CrossAxisAlignment
-                                                              .start,
-                                                      children: [
-                                                        Text(
-                                                          'ເວລາເຂົ້າຕອນເຊົ້າ: ${record['clockInAM']}',
-                                                          style: GoogleFonts
-                                                              .notoSansLao(
-                                                            fontSize: 15,
-                                                          ),
-                                                        ),
-                                                        const SizedBox(
-                                                            height: 5),
-                                                        Text(
-                                                          'ເວລາອອກຕອນເຊົ້າ: ${record['clockOutAM']}',
-                                                          style: GoogleFonts
-                                                              .notoSansLao(
-                                                            fontSize: 15,
-                                                          ),
-                                                        ),
-                                                        const SizedBox(
-                                                            height: 5),
-                                                        Text(
-                                                          'ເວລາເຂົ້າຕອນແລງ: ${record['clockInPM']}',
-                                                          style: GoogleFonts
-                                                              .notoSansLao(
-                                                            fontSize: 15,
-                                                          ),
-                                                        ),
-                                                        const SizedBox(
-                                                            height: 5),
-                                                        Text(
-                                                          'ເວລາອອກຕອນແລງ: ${record['clockOutPM']}',
-                                                          style: GoogleFonts
-                                                              .notoSansLao(
-                                                            fontSize: 15,
-                                                          ),
-                                                        ),
-                                                        const SizedBox(
-                                                            height: 5),
-                                                        Text(
-                                                          'ຕໍາແໜ່ງເຂົ້າ: ${record['checkOutLocation']}',
-                                                          style: GoogleFonts
-                                                              .notoSansLao(
-                                                            fontSize: 15,
-                                                          ),
-                                                        ),
-                                                        SizedBox(height: 5),
-                                                        Text(
-                                                          'ຕໍາແໜ່ງອອກ: ${record['checkInLocation']}',
-                                                          style: GoogleFonts
-                                                              .notoSansLao(
-                                                            fontSize: 15,
-                                                          ),
-                                                        ),
-                                                        SizedBox(height: 5),
-                                                        TextButton(
-                                                          onPressed: () {
-                                                            print(
-                                                                'Button pressed');
-                                                          },
-                                                          style: TextButton
-                                                              .styleFrom(
-                                                            backgroundColor:
-                                                                getStatusColor(
-                                                                    record[
-                                                                        'status']),
-                                                            foregroundColor:
-                                                                Colors.white,
-                                                          ),
-                                                          child: Text(
-                                                            'ສະຖານະ: ${record['status']}',
-                                                            style: GoogleFonts
-                                                                .notoSansLao(
-                                                                    fontSize:
-                                                                        15,
-                                                                    color: Colors
-                                                                        .white),
-                                                          ),
-                                                        ),
-                                                        SizedBox(height: 5),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                ],
-                                              );
-                                            },
-                                          ),
-                                        ],
-                                      );
-                                    },
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ]));
+                              ]))
+                          .animate()
+                          .scaleXY(
+                              begin: 0,
+                              end: 1,
+                              delay: 500.ms,
+                              duration: 500.ms,
+                              curve: Curves.easeInOutCubic);
                     },
                   );
                 },

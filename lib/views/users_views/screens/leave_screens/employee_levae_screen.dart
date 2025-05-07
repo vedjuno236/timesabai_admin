@@ -8,6 +8,7 @@ import 'package:admin_timesabai/views/users_views/screens/leave_screens/show_ima
 import 'package:admin_timesabai/views/widget/date_month_year/shared/month_picker.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -30,7 +31,7 @@ class _EmployeeLeaveSerceenState extends State<EmployeeLeaveSerceen> {
   String _searchQuery = '';
   bool isSearchClicked = false;
   DateTime _selectedMonth = DateTime.now();
-  DateTime _selectedDate = DateTime.now(); // To track the selected date
+  DateTime _selectedDate = DateTime.now();
   String _day = DateFormat('dd').format(DateTime.now());
   String _month = DateFormat('MMMM').format(DateTime.now());
   bool _isMonthSelected = false;
@@ -93,7 +94,12 @@ class _EmployeeLeaveSerceenState extends State<EmployeeLeaveSerceen> {
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
                     color: Colors.white),
-              ),
+              ).animate().scaleXY(
+                begin: 0,
+                end: 1,
+                delay: 500.ms,
+                duration: 500.ms,
+                curve: Curves.easeInOutCubic),
         iconTheme: const IconThemeData(color: Colors.white),
         centerTitle: true,
         actions: [
@@ -117,7 +123,12 @@ class _EmployeeLeaveSerceenState extends State<EmployeeLeaveSerceen> {
         padding: const EdgeInsets.all(10.0),
         child: Column(
           children: [
-            selectDateWidget(context),
+            selectDateWidget(context).animate().scaleXY(
+                begin: 0,
+                end: 1,
+                delay: 500.ms,
+                duration: 500.ms,
+                curve: Curves.easeInOutCubic),
             // buildSearchField(),
             SizedBox(height: 10),
 
@@ -582,7 +593,12 @@ class _EmployeeLeaveSerceenState extends State<EmployeeLeaveSerceen> {
                             ),
                           ],
                         ),
-                      );
+                      ).animate().scaleXY(
+                          begin: 0,
+                          end: 1,
+                          delay: 500.ms,
+                          duration: 500.ms,
+                          curve: Curves.easeInOutCubic);
                     },
                   );
                 },

@@ -1,6 +1,7 @@
 import 'package:admin_timesabai/views/users_views/screens/ethnicity_screens/report_ethnicity.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -314,7 +315,12 @@ class _EthnicityScreensState extends State<EthnicityScreens> {
                         ),
                       ],
                     ),
-                  ),
+                  ).animate().scaleXY(
+                    begin: 0,
+                    end: 1,
+                    delay: 500.ms,
+                    duration: 500.ms,
+                    curve: Curves.easeInOutCubic),
             Expanded(
               child: Container(
                 decoration: const BoxDecoration(
@@ -415,7 +421,12 @@ class _EthnicityScreensState extends State<EthnicityScreens> {
                                   ),
                                 ],
                               ),
-                            );
+                            ).animate().scaleXY(
+                                begin: 0,
+                                end: 1,
+                                delay: 500.ms,
+                                duration: 500.ms,
+                                curve: Curves.easeInOutCubic);
                           },
                         );
                       }
@@ -476,7 +487,12 @@ class _EthnicityScreensState extends State<EthnicityScreens> {
               onTap: _create,
               backgroundColor: Color(0xFF577DF4)),
         ],
-      ),
+      ).animate().scaleXY(
+          begin: 0,
+          end: 1,
+          delay: 500.ms,
+          duration: 500.ms,
+          curve: Curves.easeInOutCubic),
     );
   }
 }
