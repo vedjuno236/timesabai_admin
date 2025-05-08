@@ -10,7 +10,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
-import 'package:simple_month_year_picker/simple_month_year_picker.dart';
+import 'package:lottie/lottie.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 
 import '../../../../models/folder.dart';
@@ -408,19 +408,25 @@ class _HomeScreensState extends State<HomeScreens> {
                   children: [
                     Row(
                       children: [
-                        Container(
-                          padding: const EdgeInsets.all(2),
-                          decoration: const BoxDecoration(
-                              color: Colors.white, shape: BoxShape.circle),
-                          child: const CircleAvatar(
-                            radius: 35,
-                            backgroundColor: Colors.white,
-                            child: CircleAvatar(
-                              radius: 30,
-                              backgroundColor: Colors.transparent,
-                              backgroundImage: AssetImage('assets/profile.jpg'),
+                        Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            Lottie.asset(
+                              'assets/svg/profile.json',
+                              width: 150,
+                              height: 150,
                             ),
-                          ),
+                            const CircleAvatar(
+                              radius: 45,
+                              backgroundColor: Colors.white,
+                              child: CircleAvatar(
+                                radius: 40,
+                                backgroundColor: Colors.transparent,
+                                backgroundImage:
+                                    AssetImage('assets/profile.jpg'),
+                              ),
+                            ),
+                          ],
                         ),
                         const SizedBox(width: 12),
                         Text(
@@ -515,16 +521,25 @@ class _HomeScreensState extends State<HomeScreens> {
                       duration: 300.ms,
                       curve: Curves.easeInOutCubic),
                   // Profile Image
-                  const CircleAvatar(
-                    radius: 50,
-                    backgroundImage: AssetImage(
-                        'assets/profile.jpg'), // Replace with your image
-                  ).animate().scaleXY(
-                      begin: 0,
-                      end: 1,
-                      delay: 300.ms,
-                      duration: 300.ms,
-                      curve: Curves.easeInOutCubic),
+                  Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      Lottie.asset(
+                        'assets/svg/profile.json',
+                        width: 140,
+                        height: 140,
+                      ),
+                      const CircleAvatar(
+                        radius: 45,
+                        backgroundImage: AssetImage('assets/profile.jpg'),
+                      ).animate().scaleXY(
+                          begin: 0,
+                          end: 1,
+                          delay: 300.ms,
+                          duration: 300.ms,
+                          curve: Curves.easeInOutCubic),
+                    ],
+                  ),
                 ],
               ),
 

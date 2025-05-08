@@ -1,6 +1,5 @@
 import 'dart:ffi';
 
-import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:admin_timesabai/views/users_views/screens/department_screens/report_department.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';

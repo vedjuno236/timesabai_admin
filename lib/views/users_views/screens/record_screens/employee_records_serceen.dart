@@ -8,8 +8,6 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
-import 'package:simple_month_year_picker/simple_month_year_picker.dart';
-
 class UsersOrdersScreen extends StatefulWidget {
   @override
   _UsersOrdersScreenState createState() => _UsersOrdersScreenState();
@@ -25,36 +23,7 @@ class _UsersOrdersScreenState extends State<UsersOrdersScreen> {
   String _day = DateFormat('dd').format(DateTime.now());
   bool _isMonthSelected = false;
 
-  // Future<void> _selectDate(BuildContext context) async {
-  //   final DateTime? picked = await showDatePicker(
-  //     context: context,
-  //     initialDate: _selectedDate,
-  //     firstDate: DateTime(2000),
-  //     lastDate: DateTime.now(),
-  //     builder: (BuildContext context, Widget? child) {
-  //       return Theme(
-  //         data: ThemeData.light().copyWith(
-  //           textTheme: TextTheme(
-  //             bodyLarge: GoogleFonts.notoSansLao(),
-  //             bodyMedium: GoogleFonts.notoSansLao(), // Apply Google Font here
-  //             labelLarge: GoogleFonts.notoSansLao(), // Style buttons and labels
-  //           ),
-  //           dialogBackgroundColor:
-  //               Colors.white, // Optional: Customize background
-  //         ),
-  //         child: child!,
-  //       );
-  //     },
-  //   );
-  //   if (picked != null && picked != _selectedDate) {
-  //     setState(() {
-  //       _selectedDate = picked;
-  //       _day = DateFormat('dd').format(picked);
-  //       _isMonthSelected = false;
-  //     });
-  //   }
-  // }
-
+ 
   final List<Color> colors = [
     Color(0xFF5AD1fA),
     Color(0xFF836FF0),
