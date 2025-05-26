@@ -5,6 +5,7 @@ import 'package:admin_timesabai/views/widget/text_input_design.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:icons_plus/icons_plus.dart';
@@ -366,7 +367,13 @@ class _NotificationScreensState extends State<NotificationScreens> {
                       ],
                     ),
                   ),
-                ),
+                ).animate().scaleXY(
+                      begin: 0,
+                      end: 1,
+                      delay: 400.ms,
+                      duration: 400.ms,
+                      curve: Curves.easeInOutCubic,
+                    ),
               );
             },
           );

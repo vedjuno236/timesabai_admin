@@ -29,56 +29,6 @@ class _EmployeeLevaeScreenState extends State<EmployeeLevaeScreen> {
 
   bool _isDateFilterActive = false;
 
-  // Future<List<Map<String, dynamic>>> fetchEmployeesWithLeaves(
-  //     DateTime fromDate, DateTime toDate) async {
-  //   final employeeSnapshot =
-  //       await FirebaseFirestore.instance.collection('Employee').get();
-
-  //   List<Map<String, dynamic>> leaveCards = [];
-
-  //   for (var doc in employeeSnapshot.docs) {
-  //     final leaveSnapshot = await FirebaseFirestore.instance
-  //         .collection('Employee')
-  //         .doc(doc.id)
-  //         .collection('Leave')
-  //         .get();
-
-  //     for (var leaveDoc in leaveSnapshot.docs) {
-  //       final leaveData = leaveDoc.data();
-  //       final from = (leaveData['date'] as Timestamp).toDate();
-  //       final to = (leaveData['toDate'] as Timestamp).toDate();
-
-  //       final fromOnly = DateTime(from.year, from.month, from.day);
-  //       final toOnly = DateTime(to.year, to.month, to.day);
-
-  //       final isInRange = (fromOnly.isAtSameMomentAs(fromDate) ||
-  //                   fromOnly.isAfter(fromDate)) &&
-  //               (toOnly.isAtSameMomentAs(toDate) || toOnly.isBefore(toDate)) ||
-  //           (fromOnly.isBefore(fromDate) && toOnly.isAfter(toDate));
-
-  //       if (isInRange) {
-  //         leaveCards.add({
-  //           'employeeId': doc.id, // Store employee ID
-  //           'leaveId': leaveDoc.id, // Store leave document ID
-  //           'name': doc['name'],
-  //           'profileImage': doc['profileImage'],
-
-  //           'leave': leaveData,
-  //         });
-  //       }
-  //     }
-  //   }
-
-  //   // Sort by leave start date (descending)
-  //   leaveCards.sort((a, b) {
-  //     final aFrom = (a['leave']['date'] as Timestamp).toDate();
-  //     final bFrom = (b['leave']['date'] as Timestamp).toDate();
-  //     return bFrom.compareTo(aFrom);
-  //   });
-
-  //   return leaveCards;
-  // }
-
   Future<List<Map<String, dynamic>>> fetchEmployeesWithLeaves(
       DateTime? fromDate, DateTime? toDate, bool isDateFilter) async {
     final employeeSnapshot =
@@ -398,7 +348,6 @@ class _EmployeeLevaeScreenState extends State<EmployeeLevaeScreen> {
                                   });
                                 },
                                 selectableDayPredicate: (date) {
-                                  // Optional: Customize which days are selectable
                                   return true;
                                 },
                               ),
@@ -547,7 +496,7 @@ class _EmployeeLevaeScreenState extends State<EmployeeLevaeScreen> {
                         child: Padding(
                           padding: const EdgeInsets.symmetric(vertical: 10),
                           child: Container(
-                              child: Container(
+                                  child: Container(
                             decoration: BoxDecoration(
                               border:
                                   Border.all(color: Colors.white, width: 1.0),
@@ -667,7 +616,13 @@ class _EmployeeLevaeScreenState extends State<EmployeeLevaeScreen> {
                                 ],
                               ),
                             ),
-                          )),
+                          )).animate().scaleXY(
+                                begin: 0,
+                                end: 1,
+                                delay: 400.ms,
+                                duration: 400.ms,
+                                curve: Curves.easeInOutCubic,
+                              ),
                         ),
                       );
                     },
