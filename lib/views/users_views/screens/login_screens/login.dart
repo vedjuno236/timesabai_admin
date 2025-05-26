@@ -286,7 +286,7 @@ class _LoginState extends State<Login> {
         .then((DocumentSnapshot documentSnapshot) {
       if (documentSnapshot.exists) {
         String role =
-            documentSnapshot.get('rool'); // Check correct field name 'rool'
+            documentSnapshot.get('rool'); 
 
         if (role == "ບໍລິຫານ") {
           Navigator.pushReplacement(
@@ -299,7 +299,7 @@ class _LoginState extends State<Login> {
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
-              builder: (context) => EmployeeLeaveSerceen(),
+              builder: (context) => EmployeeLevaeScreen(),
             ),
           );
         } else {
@@ -359,9 +359,11 @@ class _LoginState extends State<Login> {
           configuration: IconConfiguration(icon: Icons.done),
           maxWidth: 300,
         );
-
-        await _localNotificationService.requestPermission();
-        await _localNotificationService.uploadFCM();
+    await _localNotificationService.init();
+      await _localNotificationService.requestPermission();
+      await _localNotificationService.uploadFCM();
+        // await _localNotificationService.requestPermission();
+        // await _localNotificationService.uploadFCM();
 
         route(context);
       } on FirebaseAuthException catch (e) {
@@ -390,4 +392,7 @@ class _LoginState extends State<Login> {
       }
     }
   }
+
+
+
 }

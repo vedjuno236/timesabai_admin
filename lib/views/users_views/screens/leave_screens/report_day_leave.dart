@@ -31,89 +31,80 @@ class _ReportEmployeeState extends State<ReportDayLeave> {
     );
   }
 
-  Future<Uint8List> generateDocument(PdfPageFormat format) async {
-    final doc = pw.Document(pageMode: PdfPageMode.outlines);
+Future<Uint8List> generateDocument(PdfPageFormat format) async {
+  final doc = pw.Document(pageMode: PdfPageMode.outlines);
 
-    // Load custom font for the PDF
-    final font1 =
-        pw.Font.ttf(await rootBundle.load('assets/fonts/BoonHome-400.ttf'));
+  // Load custom font for the PDF
+  final font1 = pw.Font.ttf(await rootBundle.load('assets/fonts/BoonHome-400.ttf'));
 
-    // Fetch employees from Firestore
-    final QuerySnapshot employeeSnapshot =
-        await FirebaseFirestore.instance.collection('Employee').get();
+  // Fetch employees from Firestore
+  final QuerySnapshot employeeSnapshot =
+      await FirebaseFirestore.instance.collection('Employee').get();
 
-    List<Map<String, dynamic>> employeeData = [];
+  List<Map<String, dynamic>> employeeData = [];
 
-    // Loop through each employee document
-    for (var employeeDoc in employeeSnapshot.docs) {
-      final employeeDataMap = employeeDoc.data() as Map<String, dynamic>;
+  // Loop through each employee document
+  for (var employeeDoc in employeeSnapshot.docs) {
+    final employeeDataMap = employeeDoc.data() as Map<String, dynamic>;
 
-      // Fetch employee name
-      final employeeName = employeeDataMap['name'] ?? 'ບໍມີຂໍໍມູນ';
+    // Fetch employee name
+    final employeeName = employeeDataMap['name'] ?? 'ບໍມີຂໍໍມູນ';
 
-      final recordSnapshot =
-          await employeeDoc.reference.collection('Leave').get();
+    final recordSnapshot =
+        await employeeDoc.reference.collection('Leave').get();
 
-      for (var recordDoc in recordSnapshot.docs) {
-        final recordData = recordDoc.data() as Map<String, dynamic>;
+    for (var recordDoc in recordSnapshot.docs) {
+      final recordData = recordDoc.data() as Map<String, dynamic>;
 
-        final leaveType = recordData['leaveType'] ?? 'ບໍມີຂໍໍມູນ';
-        final daySummary = recordData['daySummary'] ?? 'ບໍມີຂໍໍມູນ';
-        final status = recordData['status'] ?? 'ບໍມີຂໍໍມູນ';
-        final fromDate = recordData['fromDate'] ?? 'ບໍມີຂໍໍມູນ';
-        final toDate = recordData['toDate'] ?? 'ບໍມີຂໍໍມູນ';
-        final doc = recordData['doc'] ?? 'ບໍມີຂໍໍມູນ';
-        final day = recordData['date'] ?? 'ບໍມີຂໍໍມູນ';
+      final leaveType = recordData['leaveType'] ?? 'ບໍມີຂໍໍມູນ';
+      final daySummary = recordData['daySummary'] ?? 'ບໍມີຂໍໍມູນ';
+      final status = recordData['status'] ?? 'ບໍມີຂໍໍມູນ';
+      final fromDate = recordData['fromDate'];
+      final toDate = recordData['toDate'];
+      final doc = recordData['doc'] ?? 'ບໍມີຂໍໍມູນ';
+      final date = recordData['date'];
 
-        bool matchesName = true;
-        if (widget.searchName.isNotEmpty &&
-            !employeeName
-                .toLowerCase()
-                .contains(widget.searchName.toLowerCase())) {
-          matchesName = false;
-        }
+      bool matchesName = true;
+      if (widget.searchName.isNotEmpty &&
+          !employeeName.toLowerCase().contains(widget.searchName.toLowerCase())) {
+        matchesName = false;
+      }
 
-        if (matchesName) {
-          Timestamp? date = recordData['date'];
-          if (date != null) {
-            DateTime recordDate = date.toDate();
-            logger.d('Record Date: $recordDate, Selected Day: ${widget.Day}');
+      if (matchesName && widget.Day != null) {
+        if (fromDate is Timestamp && toDate is Timestamp) {
+          DateTime fromDateTime = fromDate.toDate();
+          DateTime toDateTime = toDate.toDate();
+          DateTime selectedDay =
+              DateTime(widget.Day!.year, widget.Day!.month, widget.Day!.day);
 
-            if (widget.Day != null) {
-              DateTime selectedDay = DateTime(
-                  widget.Day!.year, widget.Day!.month, widget.Day!.day);
-              DateTime recordDay =
-                  DateTime(recordDate.year, recordDate.month, recordDate.day);
-              if (recordDay != selectedDay) {
-                continue;
-              }
-            }
+       
+          bool isInRange = (selectedDay.isAtSameMomentAs(fromDateTime) ||
+                  selectedDay.isAfter(fromDateTime)) &&
+              (selectedDay.isAtSameMomentAs(toDateTime) ||
+                  selectedDay.isBefore(toDateTime));
+
+          if (isInRange) {
+            String fromDateString = DateFormat('EEEE d MMMM yyyy', 'lo').format(fromDateTime);
+            String toDateString = DateFormat('EEEE d MMMM yyyy', 'lo').format(toDateTime);
+            String dateString = date is Timestamp
+                ? DateFormat('EEEE d MMMM yyyy', 'lo').format(date.toDate())
+                : 'ບໍມີຂໍໍມູນ';
+
+            employeeData.add({
+              'name': employeeName,
+              'date': dateString,
+              'leaveType': leaveType,
+              'daySummary': daySummary,
+              'status': status,
+              'fromDate': fromDateString,
+              'toDate': toDateString,
+              'doc': doc,
+            });
           }
-
-          String fromDateString = fromDate != null
-              ? DateFormat('EEEE d MMMM yyyy').format(fromDate.toDate())
-              : 'ບໍມີຂໍໍມູນ';
-
-          String toDateString = toDate != 'ບໍມີຂໍໍມູນ' && toDate is Timestamp
-              ? DateFormat('EEEE d MMMM yyyy').format(toDate.toDate())
-              : 'ບໍມີຂໍໍມູນ';
-          String todayString = day != 'ບໍມີຂໍໍມູນ' && date is Timestamp
-              ? DateFormat('EEEE d MMMM ').format(date.toDate())
-              : 'ບໍມີຂໍໍມູນ';
-
-          employeeData.add({
-            'name': employeeName,
-            'date': todayString,
-            'leaveType': leaveType,
-            'daySummary': daySummary,
-            'status': status,
-            'fromDate': fromDateString,
-            'toDate': toDateString,
-            'doc': doc
-          });
         }
       }
     }
+  }
 
     Uint8List logoData =
         (await rootBundle.load('assets/icons/images.png')).buffer.asUint8List();

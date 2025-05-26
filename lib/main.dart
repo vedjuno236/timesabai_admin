@@ -87,20 +87,18 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
  Future<void> _checkTokenAndNavigate() async {
-    // Retrieve the token (this is a placeholder, replace with actual token retrieval logic)
     String? token = await FirebaseAuth.instance.currentUser?.getIdToken();
 
     if (token == null || token.isEmpty) {
-      // Navigate to Login if token is null
+    
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => Login()),
+        MaterialPageRoute(builder: (context) =>const Login()),
       );
     } else {
-      // Navigate to HomeScreens if token is valid
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => HomeScreens()),
+        MaterialPageRoute(builder: (context) => const HomeScreens()),
       );
     }
   }

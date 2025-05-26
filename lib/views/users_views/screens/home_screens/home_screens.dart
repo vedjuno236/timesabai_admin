@@ -1,9 +1,12 @@
+import 'package:admin_timesabai/components/logging.dart';
 import 'package:admin_timesabai/views/users_views/screens/ethnicity_screens/ethnicity_screens.dart';
+import 'package:admin_timesabai/views/users_views/screens/notification/notification_screens.dart';
 import 'package:admin_timesabai/views/users_views/screens/provinces_screens/provinces_screens.dart';
 import 'package:admin_timesabai/views/users_views/screens/settings/settings_stystem.dart';
 import 'package:admin_timesabai/views/users_views/screens/type_leave/type_leave.dart';
 import 'package:admin_timesabai/views/users_views/screens/user_screens/user_screens.dart';
 import 'package:admin_timesabai/views/widget/date_month_year/shared/month_picker.dart';
+import 'package:badges/badges.dart' as badges;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -47,7 +50,8 @@ class _HomeScreensState extends State<HomeScreens> {
     Folder(
         folderName: 'ຈັດການຂໍ້ມູນຜູ້ໃຊ້ລະບົບ', storage: '0', colors: '#3a86ff'),
   ];
-
+  String leaveMessage = 'ກໍາລັງໂຫລດຂໍ້ມູນ...';
+  String recordlateMessage = 'ກໍາລັງໂຫລດຂໍ້ມູນ...';
   @override
   void initState() {
     super.initState();
@@ -63,10 +67,28 @@ class _HomeScreensState extends State<HomeScreens> {
     fetchDistrictsCount();
     countTodayRecordDay();
     countTodayLeaveDay();
+    countrecordMonthCountLate(_selectedMonth!);
     countMonthLeaves(_selectedMonth!);
     DateTime now = DateTime.now();
     _selectedMonth = DateTime(now.year, now.month, 1);
     countMonthRecords(_selectedMonth!);
+    fetchLeaveNames();
+    fetchRecordLateNames();
+  }
+
+  void fetchLeaveNames() async {
+    String message = await getTodayLeaveNames();
+    setState(() {
+      leaveMessage = message;
+    });
+  }
+
+  Future<String> fetchRecordLateNames() async {
+    String message = await getLateUserNamesToday();
+    setState(() {
+      recordlateMessage = message;
+    });
+    return message;
   }
 
   Future<void> fetchEmployeeCount() async {
@@ -130,26 +152,6 @@ class _HomeScreensState extends State<HomeScreens> {
 
   int leaveMonthCount = 0;
 
-  // void countMonthLeaves() async {
-  //   try {
-  //     DateTime now = DateTime.now();
-  //     DateTime startOfMonth = DateTime(now.year, now.month, 1);
-  //     DateTime endOfMonth = DateTime(now.year, now.month + 1, 0, 23, 59, 59);
-
-  //     QuerySnapshot snapshot = await FirebaseFirestore.instance
-  //         .collectionGroup('Leave')
-  //         .where('date',
-  //             isGreaterThanOrEqualTo: Timestamp.fromDate(startOfMonth))
-  //         .where('date', isLessThanOrEqualTo: Timestamp.fromDate(endOfMonth))
-  //         .get();
-
-  //     setState(() {
-  //       leaveMonthCount = snapshot.size; // อัปเดตค่า recordCount
-  //     });
-  //   } catch (e) {
-  //     print("Error fetching the monthly records count: $e");
-  //   }
-  // }
   void countMonthLeaves(DateTime selectedMonth) async {
     try {
       DateTime startOfMonth =
@@ -173,72 +175,293 @@ class _HomeScreensState extends State<HomeScreens> {
   }
 
   int leaveCount = 0;
+
   void countTodayLeaveDay() async {
     try {
       DateTime today = DateTime.now();
-      DateTime startOfToday = DateTime(today.year, today.month, today.day);
-      DateTime endOfToday =
-          DateTime(today.year, today.month, today.day, 23, 59, 59);
 
-      QuerySnapshot snapshot = await FirebaseFirestore.instance
-          .collectionGroup('Leave')
-          .where('date',
-              isGreaterThanOrEqualTo: Timestamp.fromDate(startOfToday))
-          .where('date', isLessThanOrEqualTo: Timestamp.fromDate(endOfToday))
-          .get();
+      // เพิ่ม debug information
+      print('Today: ${today}');
+      print('Checking leave records...');
+
+      QuerySnapshot snapshot =
+          await FirebaseFirestore.instance.collectionGroup('Leave').get();
+
+      List<String> leaveNames = [];
+      List<Map<String, dynamic>> leaveDetails =
+          []; // เก็บรายละเอียดสำหรับ debug
+
+      print('Total documents found: ${snapshot.docs.length}');
+
+      for (QueryDocumentSnapshot doc in snapshot.docs) {
+        Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+
+        // Debug: แสดงข้อมูลแต่ละ document
+        print('Document data: ${data}');
+
+        if (data['fromDate'] != null &&
+            data['toDate'] != null &&
+            data['name'] != null) {
+          Timestamp fromTimestamp = data['fromDate'] as Timestamp;
+          Timestamp toTimestamp = data['toDate'] as Timestamp;
+
+          DateTime fromDate = fromTimestamp.toDate();
+          DateTime toDate = toTimestamp.toDate();
+
+          // แปลงเป็นวันที่เฉพาะ (ไม่นับเวลา)
+          DateTime fromDateOnly =
+              DateTime(fromDate.year, fromDate.month, fromDate.day);
+          DateTime toDateOnly = DateTime(toDate.year, toDate.month, toDate.day);
+          DateTime todayOnly = DateTime(today.year, today.month, today.day);
+
+          print(
+              'Comparing: Today=$todayOnly, From=$fromDateOnly, To=$toDateOnly');
+
+          // ตรวจสอบว่าวันนี้อยู่ในช่วงการลาหรือไม่
+          // วันนี้ต้องอยู่ระหว่าง fromDate และ toDate (รวมทั้งสองวัน)
+          bool isOnLeaveToday = (todayOnly.isAtSameMomentAs(fromDateOnly) ||
+                  todayOnly.isAfter(fromDateOnly)) &&
+              (todayOnly.isAtSameMomentAs(toDateOnly) ||
+                  todayOnly.isBefore(toDateOnly));
+
+          print('Is on leave today: $isOnLeaveToday');
+
+          if (isOnLeaveToday) {
+            String name = data['name'] as String;
+
+            print('Found leave: $name from $fromDateOnly to $toDateOnly');
+
+            if (!leaveNames.contains(name)) {
+              leaveNames.add(name);
+              leaveDetails.add({
+                'name': name,
+                'fromDate': fromDateOnly,
+                'toDate': toDateOnly,
+                'leaveType': data['leaveType'] ?? 'N/A',
+                'status': data['status'] ?? 'N/A'
+              });
+            }
+          }
+        } else {
+          print('Missing required fields in document: ${doc.id}');
+        }
+      }
 
       setState(() {
-        leaveCount = snapshot.size;
+        leaveCount = leaveNames.length;
       });
+
+      // แสดงผลลัพธ์สุดท้าย
+      print('=== FINAL RESULT ===');
+      print('Total people on leave today: ${leaveNames.length}');
+      print('Names: ${leaveNames.join(", ")}');
+      print('Details: $leaveDetails');
     } catch (e) {
-      print("Error fetching the records count: $e");
+      print("Error fetching leave names: $e");
+
+      setState(() {
+        leaveCount = 0;
+      });
     }
   }
 
   void countTodayLeave() async {
     try {
       DateTime today = DateTime.now();
+
+      // เพิ่ม debug information
+      print('Today: ${today}');
+      print('Checking leave records...');
+
+      QuerySnapshot snapshot =
+          await FirebaseFirestore.instance.collectionGroup('Leave').get();
+
+      List<String> leaveNames = [];
+      List<Map<String, dynamic>> leaveDetails =
+          []; // เก็บรายละเอียดสำหรับ debug
+
+      print('Total documents found: ${snapshot.docs.length}');
+
+      for (QueryDocumentSnapshot doc in snapshot.docs) {
+        Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+
+        // Debug: แสดงข้อมูลแต่ละ document
+        print('Document data: ${data}');
+
+        if (data['fromDate'] != null &&
+            data['toDate'] != null &&
+            data['name'] != null) {
+          Timestamp fromTimestamp = data['fromDate'] as Timestamp;
+          Timestamp toTimestamp = data['toDate'] as Timestamp;
+
+          DateTime fromDate = fromTimestamp.toDate();
+          DateTime toDate = toTimestamp.toDate();
+
+          // แปลงเป็นวันที่เฉพาะ (ไม่นับเวลา)
+          DateTime fromDateOnly =
+              DateTime(fromDate.year, fromDate.month, fromDate.day);
+          DateTime toDateOnly = DateTime(toDate.year, toDate.month, toDate.day);
+          DateTime todayOnly = DateTime(today.year, today.month, today.day);
+
+          print(
+              'Comparing: Today=$todayOnly, From=$fromDateOnly, To=$toDateOnly');
+
+          // ตรวจสอบว่าวันนี้อยู่ในช่วงการลาหรือไม่
+          // วันนี้ต้องอยู่ระหว่าง fromDate และ toDate (รวมทั้งสองวัน)
+          bool isOnLeaveToday = (todayOnly.isAtSameMomentAs(fromDateOnly) ||
+                  todayOnly.isAfter(fromDateOnly)) &&
+              (todayOnly.isAtSameMomentAs(toDateOnly) ||
+                  todayOnly.isBefore(toDateOnly));
+
+          print('Is on leave today: $isOnLeaveToday');
+
+          if (isOnLeaveToday) {
+            String name = data['name'] as String;
+
+            print('Found leave: $name from $fromDateOnly to $toDateOnly');
+
+            if (!leaveNames.contains(name)) {
+              leaveNames.add(name);
+              leaveDetails.add({
+                'name': name,
+                'fromDate': fromDateOnly,
+                'toDate': toDateOnly,
+                'leaveType': data['leaveType'] ?? 'N/A',
+                'status': data['status'] ?? 'N/A'
+              });
+            }
+          }
+        } else {
+          print('Missing required fields in document: ${doc.id}');
+        }
+      }
+
+      setState(() {
+        int leaveCount = leaveNames.length;
+        String message = 'ວັນນີ້: $leaveCount ຄົນ';
+        folders[4].storage = message;
+      });
+
+      // แสดงผลลัพธ์สุดท้าย
+      print('=== FINAL RESULT ===');
+      print('Total people on leave today: ${leaveNames.length}');
+      print('Names: ${leaveNames.join(", ")}');
+      print('Details: $leaveDetails');
+    } catch (e) {
+      print("Error fetching leave names: $e");
+
+      setState(() {
+        folders[4].storage = 'ເກີດຂໍ້ຜິດພາດ';
+      });
+    }
+  }
+
+  Future<String> getTodayLeaveNames() async {
+    try {
+      DateTime today = DateTime.now();
+      DateTime startOfToday = DateTime(today.year, today.month, today.day);
+      DateTime endOfToday =
+          DateTime(today.year, today.month, today.day, 23, 59, 59);
+
+      // เพิ่ม debug information
+      print('Today: ${today}');
+      print('Checking leave records...');
+
+      QuerySnapshot snapshot =
+          await FirebaseFirestore.instance.collectionGroup('Leave').get();
+
+      List<String> leaveNames = [];
+
+      print('Total documents found: ${snapshot.docs.length}');
+      for (QueryDocumentSnapshot doc in snapshot.docs) {
+        Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+
+        if (data['fromDate'] != null &&
+            data['toDate'] != null &&
+            data['name'] != null) {
+          Timestamp fromTimestamp = data['fromDate'] as Timestamp;
+          Timestamp toTimestamp = data['toDate'] as Timestamp;
+
+          DateTime fromDate = fromTimestamp.toDate();
+          DateTime toDate = toTimestamp.toDate();
+
+          DateTime fromDateOnly =
+              DateTime(fromDate.year, fromDate.month, fromDate.day);
+          DateTime toDateOnly = DateTime(toDate.year, toDate.month, toDate.day);
+          DateTime todayOnly = DateTime(today.year, today.month, today.day);
+
+          if ((todayOnly.isAtSameMomentAs(fromDateOnly) ||
+                  todayOnly.isAfter(fromDateOnly)) &&
+              (todayOnly.isAtSameMomentAs(toDateOnly) ||
+                  todayOnly.isBefore(toDateOnly))) {
+            print(
+                'Found leave: ${data['name']} from ${fromDateOnly} to ${toDateOnly}');
+
+            String name = data['name'] as String;
+            if (!leaveNames.contains(name)) {
+              leaveNames.add(name);
+            }
+          }
+        }
+      }
+
+      String message = leaveNames.isEmpty
+          ? 'ວັນນີ້ບໍ່ມີພະນັກງານລາພັກ'
+          : 'ພະນັກງານທີ່ພັກວັນນີ້: ${leaveNames.join(", ")}';
+
+      print(message);
+      return message;
+    } catch (e) {
+      print("Error fetching leave names: $e");
+      return 'ເກີດຂໍ້ຜິດພາດໃນການດຶງຂໍ້ມູນ';
+    }
+  }
+
+  Future<String> getLateUserNamesToday() async {
+    try {
+      DateTime today = DateTime.now();
       DateTime startOfToday = DateTime(today.year, today.month, today.day);
       DateTime endOfToday =
           DateTime(today.year, today.month, today.day, 23, 59, 59);
 
       QuerySnapshot snapshot = await FirebaseFirestore.instance
-          .collectionGroup('Leave')
+          .collectionGroup('Record')
           .where('date',
               isGreaterThanOrEqualTo: Timestamp.fromDate(startOfToday))
           .where('date', isLessThanOrEqualTo: Timestamp.fromDate(endOfToday))
           .get();
 
-      setState(() {
-        int leaveCount = snapshot.size;
-        String message = 'ວັນນີ້:$leaveCount';
-        folders[4].storage = message;
-      });
+      List<String> lateUserNames = [];
+      for (var doc in snapshot.docs) {
+        final data = doc.data() as Map<String, dynamic>;
+        final status = data['status']?.toString().trim();
+
+        if (status == 'ມາວຽກຊ້າ') {
+          final parentId = doc.reference.parent.parent?.id;
+
+          if (parentId != null) {
+            final userDoc = await FirebaseFirestore.instance
+                .collection('Employee')
+                .doc(parentId)
+                .get();
+
+            final name = userDoc.data()?['name'] ?? 'ບໍ່ຮູ້ຊື່';
+            lateUserNames.add(name);
+          }
+        }
+      }
+
+      String message = lateUserNames.isEmpty
+          ? 'ວັນນີ້ບໍ່ມີພະນັກງານມາຊ້າ'
+          : 'ພະນັກງານທີ່ມາຊ້າວັນນີ້: ${lateUserNames.join(", ")}';
+
+      logger.d("ผู้ที่มาทำงานช้า: $lateUserNames");
+      return message;
     } catch (e) {
-      print("Error fetching the records count: $e");
+      print("Error fetching late users: $e");
+      return "Error fetching data";
     }
   }
-
-  // void countMonthRecords() async {
-  //   try {
-  //     DateTime now = DateTime.now();
-  //     DateTime startOfMonth = DateTime(now.year, now.month, 1);
-  //     DateTime endOfMonth = DateTime(now.year, now.month + 1, 0, 23, 59, 59);
-
-  //     QuerySnapshot snapshot = await FirebaseFirestore.instance
-  //         .collectionGroup('Record')
-  //         .where('date',
-  //             isGreaterThanOrEqualTo: Timestamp.fromDate(startOfMonth))
-  //         .where('date', isLessThanOrEqualTo: Timestamp.fromDate(endOfMonth))
-  //         .get();
-
-  //     setState(() {
-  //       recordMonthCount = snapshot.size; // อัปเดตค่า recordCount
-  //     });
-  //   } catch (e) {
-  //     print("Error fetching the monthly records count: $e");
-  //   }
-  // }
 
   int recordMonthCount = 0;
   void countMonthRecords(DateTime selectedMonth) async {
@@ -256,11 +479,47 @@ class _HomeScreensState extends State<HomeScreens> {
           .get();
 
       setState(() {
-        recordMonthCount =
-            snapshot.size; // Update the count based on selected month
+        recordMonthCount = snapshot.size;
       });
     } catch (e) {
       print("Error fetching records count: $e");
+    }
+  }
+
+  int recordMonthCountLate = 0;
+
+  Future<void> countrecordMonthCountLate(DateTime selectedMonth) async {
+    try {
+      DateTime startOfMonth =
+          DateTime(selectedMonth.year, selectedMonth.month, 1);
+      DateTime endOfMonth =
+          DateTime(selectedMonth.year, selectedMonth.month + 1, 0, 23, 59, 59);
+
+      QuerySnapshot snapshot = await FirebaseFirestore.instance
+          .collectionGroup('Record')
+          .where('date',
+              isGreaterThanOrEqualTo: Timestamp.fromDate(startOfMonth))
+          .where('date', isLessThanOrEqualTo: Timestamp.fromDate(endOfMonth))
+          // .where('status', isEqualTo: 'ມາວຽກຊ້າ')
+          .get();
+
+      int lateCount = 0;
+
+      for (var doc in snapshot.docs) {
+        final status = doc['status']?.toString().trim();
+        if (status == 'ມາວຽກຊ້າ') {
+          lateCount++;
+        } else {
+          print("พบ status ที่ไม่ตรง: '$status'");
+        }
+      }
+      setState(() {
+        recordMonthCountLate = lateCount;
+
+        logger.d(recordMonthCountLate);
+      });
+    } catch (e) {
+      print("Error fetching late records count: $e");
     }
   }
 
@@ -280,10 +539,39 @@ class _HomeScreensState extends State<HomeScreens> {
           .get();
 
       setState(() {
-        recordCount = snapshot.size; // อัปเดตค่า recordCount
+        recordCount = snapshot.size;
       });
     } catch (e) {
       print("Error fetching the records count: $e");
+    }
+  }
+
+  int lateCount = 0;
+  void countTodayLateRecords() async {
+    try {
+      DateTime today = DateTime.now();
+      DateTime startOfToday = DateTime(today.year, today.month, today.day);
+      DateTime endOfToday =
+          DateTime(today.year, today.month, today.day, 23, 59, 59);
+
+      QuerySnapshot snapshot = await FirebaseFirestore.instance
+          .collectionGroup('Record')
+          .where('date',
+              isGreaterThanOrEqualTo: Timestamp.fromDate(startOfToday))
+          .where('date', isLessThanOrEqualTo: Timestamp.fromDate(endOfToday))
+          .where('status', isEqualTo: 'ມາວຽກຊ້າ')
+          .get();
+
+      setState(() {
+        lateCount = snapshot.size;
+      });
+
+      print('Late records today: ${snapshot.size}');
+    } catch (e) {
+      print("Error fetching late records count: $e");
+      setState(() {
+        lateCount = 0;
+      });
     }
   }
 
@@ -375,17 +663,22 @@ class _HomeScreensState extends State<HomeScreens> {
     }
   }
 
-  final List<ChartData> chartData = [
-    ChartData('ມາວຽກ', 90, Colors.blueAccent),
-    ChartData('ມາຊ້າ', 10, Colors.orange),
-    ChartData('ຂາດວຽກ', 30, Colors.pink),
-  ];
-  final List<ChartDataPie> chartDataPie = [
-    ChartDataPie('ມາວຽກ', 90, Colors.blueAccent),
-    ChartDataPie('ມາຊ້າ', 10, Colors.orange),
-    ChartDataPie('ຂາດວຽກ', 30, Colors.pink),
-    ChartDataPie('ລາພັກ', 30, Colors.cyanAccent),
-  ];
+  List<ChartData> getChartData() {
+    return [
+      ChartData('ມາວຽກ', recordCount.toDouble(), Colors.blueAccent),
+      ChartData('ມາຊ້າ', lateCount.toDouble(), Colors.orange),
+      ChartData('ລາພັກ', leaveCount.toDouble(), Colors.cyan),
+    ];
+  }
+
+  List<ChartDataPie> getchartDataPie() {
+    return [
+      ChartDataPie('ມາວຽກ', recordMonthCount.toDouble(), Colors.blueAccent),
+      ChartDataPie('ມາຊ້າ', recordMonthCountLate.toDouble(), Colors.orange),
+      ChartDataPie('ລາພັກ', leaveMonthCount.toDouble(), Colors.cyan),
+    ];
+  }
+
   DateTime _selectedMonth = DateTime.now();
   String _month = DateFormat('MMMM').format(DateTime.now());
   @override
@@ -428,7 +721,7 @@ class _HomeScreensState extends State<HomeScreens> {
                             ),
                           ],
                         ),
-                        const SizedBox(width: 12),
+                        const SizedBox(width: 5),
                         Text(
                           "Hi ADMIN!",
                           style: GoogleFonts.notoSansLao(
@@ -436,15 +729,33 @@ class _HomeScreensState extends State<HomeScreens> {
                               fontSize: 20,
                               fontWeight: FontWeight.w600),
                         ),
+                        // const Spacer(),
+                        // IconButton(
+                        //   color: Colors.white,
+                        //   onPressed: () {
+                        //     Navigator.of(context).push(MaterialPageRoute(
+                        //         builder: (context) => const SettingsStystem()));
+                        //   },
+                        //   icon: const FaIcon(FontAwesomeIcons.sliders),
+                        // ),
                         const Spacer(),
-                        IconButton(
-                          color: Colors.white,
-                          onPressed: () {
-                            Navigator.of(context).push(MaterialPageRoute(
-                                builder: (context) => const SettingsStystem()));
-                          },
-                          icon: const FaIcon(FontAwesomeIcons.sliders),
-                        )
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () {
+                              Navigator.of(context).push(MaterialPageRoute(
+                                  builder: (context) =>
+                                      const NotificationScreens()));
+                            },
+                            child: CircleAvatar(
+                              backgroundColor: Colors.white,
+                              radius: 20,
+                              child: badges.Badge(
+                                  position: badges.BadgePosition.topEnd(
+                                      top: 0, end: 0),
+                                  child: FaIcon(FontAwesomeIcons.bell)),
+                            ),
+                          ),
+                        ),
                       ],
                     ),
                     Row(
@@ -475,7 +786,13 @@ class _HomeScreensState extends State<HomeScreens> {
                         ),
                         Expanded(
                           flex: 1,
-                          child: Image.asset('assets/folder.png'),
+                          child: GestureDetector(
+                              onTap: () {
+                                Navigator.of(context).push(MaterialPageRoute(
+                                    builder: (context) =>
+                                        const SettingsStystem()));
+                              },
+                              child: Image.asset('assets/folder.png')),
                         ),
                       ],
                     )
@@ -500,16 +817,14 @@ class _HomeScreensState extends State<HomeScreens> {
                         margin: EdgeInsets.zero,
                         series: <CircularSeries>[
                           RadialBarSeries<ChartData, String>(
-                            dataSource: chartData,
+                            dataSource: getChartData(), // Use the method here
                             xValueMapper: (ChartData data, _) => data.category,
                             yValueMapper: (ChartData data, _) => data.value,
                             pointColorMapper: (ChartData data, _) => data.color,
-                            trackColor:
-                                Colors.grey.shade200, // Background track
+                            trackColor: Colors.grey.shade200,
                             cornerStyle: CornerStyle.bothCurve,
                             gap: '10%',
-                            innerRadius:
-                                '50%', // Creates space for the profile image
+                            innerRadius: '50%',
                           ),
                         ],
                       ),
@@ -551,7 +866,7 @@ class _HomeScreensState extends State<HomeScreens> {
                     spacing: 16,
                     runSpacing: 8,
                     alignment: WrapAlignment.center,
-                    children: chartData.map((data) {
+                    children: getChartData().map((data) {
                       return Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
@@ -573,6 +888,43 @@ class _HomeScreensState extends State<HomeScreens> {
                   delay: 300.ms,
                   duration: 300.ms,
                   curve: Curves.easeInOutCubic),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Divider(
+                  color: Colors.grey.shade200,
+                ),
+              ),
+
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'ມາການວັນນີ້: $recordCount',
+                      style: GoogleFonts.notoSansLao(
+                          fontSize: 15, color: Colors.blueAccent),
+                    ),
+                    const SizedBox(
+                      height: 5,
+                    ),
+                    Text(
+                      'ມາວຽກຊ້າວັນນີ້: $lateCount',
+                      style: GoogleFonts.notoSansLao(
+                          fontSize: 15, color: Colors.deepOrange),
+                    ),
+                    const SizedBox(
+                      height: 5,
+                    ),
+                    Text(
+                      'ລາພັກວັນນີ້: $leaveCount',
+                      style: GoogleFonts.notoSansLao(
+                          fontSize: 15, color: Colors.orange),
+                    ),
+                  ],
+                ),
+              ),
               Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Divider(
@@ -681,8 +1033,9 @@ class _HomeScreensState extends State<HomeScreens> {
                                           _selectedMonth = tempSelectedMonth!;
                                         });
                                         countMonthLeaves(tempSelectedMonth!);
-                                        countMonthRecords(
-                                            tempSelectedMonth!); // Fetch records count for the selected month
+                                        countMonthRecords(tempSelectedMonth!);
+                                        countrecordMonthCountLate(
+                                            tempSelectedMonth!);
                                       }
                                       Navigator.pop(context);
                                     },
@@ -738,6 +1091,7 @@ class _HomeScreensState extends State<HomeScreens> {
               Padding(
                 padding: const EdgeInsets.all(10.0),
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text.rich(
                       TextSpan(
@@ -773,7 +1127,28 @@ class _HomeScreensState extends State<HomeScreens> {
                               text: ' :$leaveMonthCount/ຄົນ',
                               style: GoogleFonts.notoSansLao(
                                 fontSize: 20,
-                                color: Colors.blueAccent.shade400,
+                                color: Colors.cyan,
+                              )),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(
+                      height: 10,
+                    ),
+                    Text.rich(
+                      TextSpan(
+                        style: GoogleFonts.notoSansLao(
+                          fontSize: 15,
+                          color: Colors.black,
+                        ),
+                        text:
+                            'ມາວຽກຊ້າ ${_selectedMonth != null ? DateFormat('MMMM yyyy').format(_selectedMonth!) : "ເລືອກເດືອນ"}',
+                        children: [
+                          TextSpan(
+                              text: ' :$recordMonthCountLate/ຄົນ',
+                              style: GoogleFonts.notoSansLao(
+                                fontSize: 20,
+                                color: Colors.orange,
                               )),
                         ],
                       ),
@@ -786,86 +1161,101 @@ class _HomeScreensState extends State<HomeScreens> {
                   delay: 300.ms,
                   duration: 300.ms,
                   curve: Curves.easeInOutCubic),
-              Row(
-                children: [
-                  Center(
-                    child: SizedBox(
-                      height: 250,
-                      width: 250,
-                      child: SfCircularChart(
-                        series: <CircularSeries>[
-                          PieSeries<ChartDataPie, String>(
-                            dataSource: chartDataPie,
-                            xValueMapper: (ChartDataPie data, _) =>
-                                data.category,
-                            yValueMapper: (ChartDataPie data, _) => data.value,
-                            pointColorMapper: (ChartDataPie data, _) =>
-                                data.color,
-                            dataLabelMapper: (ChartDataPie data, _) =>
-                                data.category, // แสดงแค่ชื่อ
-                            dataLabelSettings: const DataLabelSettings(
-                              isVisible: true,
-                              labelPosition: ChartDataLabelPosition
-                                  .outside, // ให้อยู่นอกวงกลม
-                              connectorLineSettings: ConnectorLineSettings(
-                                width: 1.5,
-                                type: ConnectorType.line,
-                              ),
-                              textStyle: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            explode: true, // ทำให้บางชิ้นแยกออก
-                            explodeIndex: 1, // ชิ้นที่ 3 จะแยกออก
+              Center(
+                child: SizedBox(
+                  height: 250,
+                  width: 250,
+                  child: SfCircularChart(
+                    series: <CircularSeries>[
+                      PieSeries<ChartDataPie, String>(
+                        dataSource: getchartDataPie(), // Call the method here
+                        xValueMapper: (ChartDataPie data, _) => data.category,
+                        yValueMapper: (ChartDataPie data, _) => data.value,
+                        pointColorMapper: (ChartDataPie data, _) => data.color,
+                        dataLabelMapper: (ChartDataPie data, _) =>
+                            data.category,
+                        dataLabelSettings: const DataLabelSettings(
+                          isVisible: true,
+                          labelPosition: ChartDataLabelPosition.outside,
+                          connectorLineSettings: ConnectorLineSettings(
+                            width: 1.5,
+                            type: ConnectorType.line,
                           ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'ມາການວັນນີ້: $recordCount',
-                        style: GoogleFonts.notoSansLao(
-                            fontSize: 15, color: Colors.blueAccent),
-                      ),
-                      const SizedBox(
-                        height: 5,
-                      ),
-                      Text(
-                        'ລາພັກວັນນີ້: $leaveCount',
-                        style: GoogleFonts.notoSansLao(
-                            fontSize: 15, color: Colors.redAccent),
-                      ),
-                      const SizedBox(
-                        height: 5,
-                      ),
-                      Text(
-                        'ມາວຽກຊ້າວັນນີ້: $leaveMonthCount',
-                        style: GoogleFonts.notoSansLao(
-                            fontSize: 15, color: Colors.orangeAccent.shade400),
-                      ),
-                      const SizedBox(
-                        height: 5,
-                      ),
-                      Text(
-                        'ຂາດວຽກວັນນີ້: $leaveMonthCount',
-                        style: GoogleFonts.notoSansLao(
-                            fontSize: 15, color: Colors.brown.shade400),
+                          textStyle: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        explode: true,
+                        explodeIndex: 1,
                       ),
                     ],
                   ),
-                ],
+                ),
               ).animate().scaleXY(
                   begin: 0,
                   end: 1,
                   delay: 300.ms,
                   duration: 300.ms,
                   curve: Curves.easeInOutCubic),
-
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Divider(
+                  color: Colors.grey.shade200,
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(10.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'ລາຍຊື່ພະນັກງານທີລາພັກວັນນີ້',
+                      style: GoogleFonts.notoSansLao(
+                          fontSize: 17, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(
+                      height: 10,
+                    ),
+                    Text(
+                      leaveMessage,
+                      style: GoogleFonts.notoSansLao(fontSize: 15),
+                    ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Divider(
+                  color: Colors.grey.shade200,
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(10.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'ລາຍຊື່ພະນັກງານທີມາການຊ້າ',
+                      style: GoogleFonts.notoSansLao(
+                          fontSize: 17, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(
+                      height: 10,
+                    ),
+                    Text(
+                      recordlateMessage,
+                      style: GoogleFonts.notoSansLao(fontSize: 15),
+                    ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Divider(
+                  color: Colors.grey.shade200,
+                ),
+              ),
               Padding(
                 padding: const EdgeInsets.all(10.0),
                 child: Text(
@@ -900,10 +1290,10 @@ class _HomeScreensState extends State<HomeScreens> {
                               builder: (context) => PositionScreens()));
                         } else if (i == 4) {
                           Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) => EmployeeLeaveSerceen()));
+                              builder: (context) => EmployeeLevaeScreen()));
                         } else if (i == 5) {
                           Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) => UsersOrdersScreen()));
+                              builder: (context) => EmployeeRecordsSerceen()));
                         } else if (i == 6) {
                           Navigator.of(context).push(MaterialPageRoute(
                               builder: (context) => AgenciesScreens()));

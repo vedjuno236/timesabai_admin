@@ -1,67 +1,178 @@
-import 'dart:async';
-
-import 'package:admin_timesabai/components/logging.dart';
-import 'package:admin_timesabai/views/users_views/screens/leave_screens/pdf_leave_view.dart';
 import 'package:admin_timesabai/views/users_views/screens/leave_screens/report__month_leave.dart';
 import 'package:admin_timesabai/views/users_views/screens/leave_screens/report_day_leave.dart';
-import 'package:admin_timesabai/views/users_views/screens/leave_screens/show_images.dart';
 import 'package:admin_timesabai/views/widget/date_month_year/shared/month_picker.dart';
+import 'package:admin_timesabai/views/widget/loading_platform/loading.dart';
+import 'package:admin_timesabai/views/widget/text_input_design.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
-import 'package:loading_animation_widget/loading_animation_widget.dart';
-import 'package:panara_dialogs/panara_dialogs.dart';
+import 'package:lottie/lottie.dart';
 
-import '../../../../service/notification/notification_admin.dart';
-
-class EmployeeLeaveSerceen extends StatefulWidget {
-  const EmployeeLeaveSerceen({super.key});
-
+class EmployeeLevaeScreen extends StatefulWidget {
+  const EmployeeLevaeScreen({Key? key}) : super(key: key);
   @override
-  State<EmployeeLeaveSerceen> createState() => _EmployeeLeaveSerceenState();
+  _EmployeeLevaeScreenState createState() => _EmployeeLevaeScreenState();
 }
 
-class _EmployeeLeaveSerceenState extends State<EmployeeLeaveSerceen> {
-  String _searchName = '';
-  String _searchQuery = '';
-  bool isSearchClicked = false;
+class _EmployeeLevaeScreenState extends State<EmployeeLevaeScreen> {
+  @override
   DateTime _selectedMonth = DateTime.now();
   DateTime _selectedDate = DateTime.now();
-  String _day = DateFormat('dd').format(DateTime.now());
+  bool isSearchClicked = false;
+  String _searchName = '';
   String _month = DateFormat('MMMM').format(DateTime.now());
-  bool _isMonthSelected = false;
+  String _day = DateFormat('dd').format(DateTime.now());
 
-  Future<void> sendNotification() async {
-    QuerySnapshot snapshot =
-        await FirebaseFirestore.instance.collection('Users').get();
-    snapshot.docs.forEach((doc) async {
-      final Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+  bool _isDateFilterActive = false;
 
-      if (data.containsKey('FCM')) {
-        NotificationService().pushNotification(
-            title: "HI",
-            body: 'ຂໍລາຍເຊັນເພື່ອເຊັນໃບລາພັກຂອງພະນັກງານ',
-            token: data['FCM']);
+  // Future<List<Map<String, dynamic>>> fetchEmployeesWithLeaves(
+  //     DateTime fromDate, DateTime toDate) async {
+  //   final employeeSnapshot =
+  //       await FirebaseFirestore.instance.collection('Employee').get();
+
+  //   List<Map<String, dynamic>> leaveCards = [];
+
+  //   for (var doc in employeeSnapshot.docs) {
+  //     final leaveSnapshot = await FirebaseFirestore.instance
+  //         .collection('Employee')
+  //         .doc(doc.id)
+  //         .collection('Leave')
+  //         .get();
+
+  //     for (var leaveDoc in leaveSnapshot.docs) {
+  //       final leaveData = leaveDoc.data();
+  //       final from = (leaveData['date'] as Timestamp).toDate();
+  //       final to = (leaveData['toDate'] as Timestamp).toDate();
+
+  //       final fromOnly = DateTime(from.year, from.month, from.day);
+  //       final toOnly = DateTime(to.year, to.month, to.day);
+
+  //       final isInRange = (fromOnly.isAtSameMomentAs(fromDate) ||
+  //                   fromOnly.isAfter(fromDate)) &&
+  //               (toOnly.isAtSameMomentAs(toDate) || toOnly.isBefore(toDate)) ||
+  //           (fromOnly.isBefore(fromDate) && toOnly.isAfter(toDate));
+
+  //       if (isInRange) {
+  //         leaveCards.add({
+  //           'employeeId': doc.id, // Store employee ID
+  //           'leaveId': leaveDoc.id, // Store leave document ID
+  //           'name': doc['name'],
+  //           'profileImage': doc['profileImage'],
+
+  //           'leave': leaveData,
+  //         });
+  //       }
+  //     }
+  //   }
+
+  //   // Sort by leave start date (descending)
+  //   leaveCards.sort((a, b) {
+  //     final aFrom = (a['leave']['date'] as Timestamp).toDate();
+  //     final bFrom = (b['leave']['date'] as Timestamp).toDate();
+  //     return bFrom.compareTo(aFrom);
+  //   });
+
+  //   return leaveCards;
+  // }
+
+  Future<List<Map<String, dynamic>>> fetchEmployeesWithLeaves(
+      DateTime? fromDate, DateTime? toDate, bool isDateFilter) async {
+    final employeeSnapshot =
+        await FirebaseFirestore.instance.collection('Employee').get();
+
+    List<Map<String, dynamic>> leaveCards = [];
+
+    for (var doc in employeeSnapshot.docs) {
+      final leaveSnapshot = await FirebaseFirestore.instance
+          .collection('Employee')
+          .doc(doc.id)
+          .collection('Leave')
+          .get();
+
+      for (var leaveDoc in leaveSnapshot.docs) {
+        final leaveData = leaveDoc.data();
+        final from = (leaveData['fromDate'] as Timestamp).toDate();
+        final to = (leaveData['toDate'] as Timestamp).toDate();
+
+        final fromOnly = DateTime(from.year, from.month, from.day);
+        final toOnly = DateTime(to.year, to.month, to.day);
+
+        bool isInRange = false;
+
+        if (isDateFilter) {
+          final selectedDateOnly = DateTime(
+              _selectedDate.year, _selectedDate.month, _selectedDate.day);
+          isInRange = (fromOnly.isAtSameMomentAs(selectedDateOnly) ||
+                  fromOnly.isBefore(selectedDateOnly)) &&
+              (toOnly.isAtSameMomentAs(selectedDateOnly) ||
+                  toOnly.isAfter(selectedDateOnly));
+        } else {
+          isInRange = (fromOnly.isAtSameMomentAs(fromDate!) ||
+                      fromOnly.isAfter(fromDate)) &&
+                  (toOnly.isAtSameMomentAs(toDate!) ||
+                      toOnly.isBefore(toDate)) ||
+              (fromOnly.isBefore(fromDate) && toOnly.isAfter(toDate!));
+        }
+
+        if (isInRange) {
+          leaveCards.add({
+            'employeeId': doc.id,
+            'leaveId': leaveDoc.id,
+            'name': doc['name'],
+            'profileImage': doc['profileImage'],
+            'leave': leaveData,
+          });
+        }
       }
-    });
-  }
+    }
 
-  final List<Color> colors = [
-    Color(0xFF5AD1fA),
-    Color(0xFF836FF0),
-    Color(0XFF1AC286),
-    Color(0XFFF984BC)
-  ];
+    // Sort by leave start date (descending)
+    leaveCards.sort((a, b) {
+      final aFrom = (a['leave']['date'] as Timestamp).toDate();
+      final bFrom = (b['leave']['date'] as Timestamp).toDate();
+      return bFrom.compareTo(aFrom);
+    });
+
+    return leaveCards;
+  }
 
   @override
   Widget build(BuildContext context) {
+    DateTime? fromDate;
+    DateTime? toDate;
+    bool isDateFilter = _isDateFilterActive;
+
+    if (isDateFilter) {
+      // Use selected date for filtering
+      fromDate =
+          DateTime(_selectedDate.year, _selectedDate.month, _selectedDate.day);
+      toDate = fromDate;
+    } else {
+      // Use selected month for filtering
+      fromDate = DateTime(_selectedMonth.year, _selectedMonth.month, 1);
+      toDate = DateTime(_selectedMonth.year, _selectedMonth.month + 1, 1)
+          .subtract(const Duration(days: 1));
+    }
+
     return Scaffold(
+      backgroundColor: const Color(0xffF0F2F6),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF577DF4),
+        centerTitle: true,
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+              gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                Colors.blue.shade100,
+                Colors.blue.shade300,
+                Colors.blue.shade500
+              ])),
+        ),
         title: isSearchClicked
             ? Container(
                 height: 40,
@@ -100,7 +211,6 @@ class _EmployeeLeaveSerceenState extends State<EmployeeLeaveSerceen> {
                 duration: 500.ms,
                 curve: Curves.easeInOutCubic),
         iconTheme: const IconThemeData(color: Colors.white),
-        centerTitle: true,
         actions: [
           IconButton(
             onPressed: () {
@@ -110,494 +220,456 @@ class _EmployeeLeaveSerceenState extends State<EmployeeLeaveSerceen> {
             },
             icon: Icon(isSearchClicked ? Icons.close : Icons.search),
           ),
-          IconButton(
-            onPressed: () {
-              sendNotification();
-            },
-            icon: Icon(Icons.send),
-          ),
         ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(10.0),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            selectDateWidget(context).animate().scaleXY(
-                begin: 0,
-                end: 1,
-                delay: 500.ms,
-                duration: 500.ms,
-                curve: Curves.easeInOutCubic),
-            // buildSearchField(),
-            SizedBox(height: 10),
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        _isDateFilterActive = false;
+                      });
+                      showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          DateTime now = DateTime.now();
+                          DateTime maxDate =
+                              DateTime(now.year, now.month + 1, 0);
+                          DateTime? tempSelectedMonth = _selectedMonth;
 
+                          return AlertDialog(
+                            elevation: 2,
+                            shadowColor: Colors.blue,
+                            backgroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(15.0),
+                            ),
+                            content: SizedBox(
+                              height: 300,
+                              width: 450,
+                              child: MonthPicker(
+                                selectedCellDecoration: const BoxDecoration(
+                                  color: Colors.blue,
+                                  shape: BoxShape.circle,
+                                ),
+                                selectedCellTextStyle: GoogleFonts.notoSansLao(
+                                  fontSize: 14,
+                                ),
+                                enabledCellsTextStyle: GoogleFonts.notoSansLao(
+                                  fontSize: 14,
+                                ),
+                                disabledCellsTextStyle: GoogleFonts.notoSansLao(
+                                    fontSize: 14, color: Colors.grey),
+                                currentDateTextStyle: GoogleFonts.notoSansLao(
+                                  fontSize: 14,
+                                ),
+                                currentDateDecoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    width: 1,
+                                    color: Colors.black,
+                                  ),
+                                ),
+                                splashColor: Colors.blue,
+                                slidersColor: Colors.black,
+                                centerLeadingDate: true,
+                                minDate: DateTime(2000),
+                                currentDate: _selectedMonth,
+                                selectedDate: _selectedMonth,
+                                onDateSelected: (month) {
+                                  tempSelectedMonth = month;
+                                },
+                                maxDate: maxDate,
+                              ),
+                            ),
+                            actions: [
+                              ElevatedButton(
+                                  onPressed: () => Navigator.pop(context),
+                                  style: ElevatedButton.styleFrom(
+                                    elevation: 0,
+                                    backgroundColor: Colors.grey,
+                                  ),
+                                  child: Text('ຍົກເລີກ',
+                                      style: GoogleFonts.notoSansLao(
+                                        textStyle: const TextStyle(
+                                          fontSize: 15,
+                                          color: Colors.black,
+                                        ),
+                                      ))),
+                              ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  elevation: 0,
+                                  backgroundColor: Colors.blue,
+                                ),
+                                onPressed: () {
+                                  if (tempSelectedMonth != null &&
+                                      tempSelectedMonth != _selectedMonth) {
+                                    setState(() {
+                                      _selectedMonth = tempSelectedMonth!;
+                                      _month = DateFormat('MMMM')
+                                          .format(_selectedMonth!);
+                                    });
+                                  }
+                                  Navigator.pop(context);
+                                },
+                                child: Text(
+                                  'ຕົກລົງ',
+                                  style: GoogleFonts.notoSansLao(
+                                    textStyle: const TextStyle(
+                                      fontSize: 15,
+                                      color: Colors.black,
+                                    ),
+                                  ),
+                                ),
+                              )
+                            ],
+                          );
+                        },
+                      );
+                    },
+                    child: Container(
+                        width: 180,
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.grey, width: 1.0),
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(20.0),
+                        ),
+                        child: Center(
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Row(
+                              children: [
+                                Image.asset('assets/images/calendar.png'),
+                                const SizedBox(
+                                  width: 10,
+                                ),
+                                Text(
+                                    "ເລືອກເດືອນ: ${_month.isEmpty ? "ເລືອກເດືອນ" : _month}",
+                                    style: GoogleFonts.notoSansLao(
+                                        textStyle: const TextStyle(
+                                      fontSize: 15,
+                                      color: Colors.black,
+                                    ))),
+                              ],
+                            ),
+                          ),
+                        )),
+                  ),
+                  const SizedBox(
+                    width: 10,
+                  ),
+                  GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        _isDateFilterActive = true;
+                      });
+                      showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          DateTime now = DateTime.now();
+                          DateTime maxDate =
+                              DateTime(now.year, now.month + 1, 0);
+                          DateTime? tempSelectedDate = _selectedDate;
+                          return AlertDialog(
+                            elevation: 2,
+                            shadowColor: Colors.blue,
+                            backgroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(15.0),
+                            ),
+                            content: SizedBox(
+                              height: 300,
+                              width: 450,
+                              child: CalendarDatePicker(
+                                initialDate: _selectedDate ?? DateTime.now(),
+                                firstDate: DateTime(2000),
+                                lastDate: DateTime(2050),
+                                onDateChanged: (date) {
+                                  setState(() {
+                                    tempSelectedDate = date;
+                                  });
+                                },
+                                selectableDayPredicate: (date) {
+                                  // Optional: Customize which days are selectable
+                                  return true;
+                                },
+                              ),
+                            ),
+                            actions: [
+                              ElevatedButton(
+                                onPressed: () => Navigator.pop(context),
+                                style: ElevatedButton.styleFrom(
+                                  elevation: 0,
+                                  backgroundColor: Colors.grey,
+                                ),
+                                child: Text(
+                                  'ຍົກເລີກ',
+                                  style: GoogleFonts.notoSansLao(
+                                    textStyle: const TextStyle(
+                                      fontSize: 15,
+                                      color: Colors.black,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  elevation: 0,
+                                  backgroundColor: Colors.blue,
+                                ),
+                                onPressed: () {
+                                  if (tempSelectedDate != null &&
+                                      tempSelectedDate != _selectedDate) {
+                                    setState(() {
+                                      _selectedDate = tempSelectedDate!;
+                                      _day = DateFormat('dd')
+                                          .format(_selectedDate!);
+                                    });
+                                  }
+                                  Navigator.pop(context);
+                                },
+                                child: Text(
+                                  'ຕົກລົງ',
+                                  style: GoogleFonts.notoSansLao(
+                                    textStyle: const TextStyle(
+                                      fontSize: 15,
+                                      color: Colors.black,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          );
+                        },
+                      );
+                    },
+                    child: Container(
+                        width: 150,
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.grey, width: 1.0),
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(20.0),
+                        ),
+                        child: Center(
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Row(
+                              children: [
+                                Image.asset('assets/images/calendar.png'),
+                                const SizedBox(
+                                  width: 10,
+                                ),
+                                Text(
+                                    "ເລືອກວັນທີ: ${_day.isEmpty ? "ເລືອກວັນທີ" : _day}",
+                                    style: GoogleFonts.notoSansLao(
+                                        textStyle: const TextStyle(
+                                      fontSize: 15,
+                                      color: Colors.black,
+                                    ))),
+                              ],
+                            ),
+                          ),
+                        )),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(
+              height: 10,
+            ),
             Expanded(
-              child: StreamBuilder<QuerySnapshot>(
-                stream: FirebaseFirestore.instance
-                    .collection('Employee')
-                    .snapshots(),
+              child: FutureBuilder<List<Map<String, dynamic>>>(
+                future:
+                    fetchEmployeesWithLeaves(fromDate, toDate, isDateFilter),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(child: CircularProgressIndicator());
-                  } else if (snapshot.hasError) {
-                    return Center(child: Text('Error: ${snapshot.error}'));
-                  } else if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                    return const Center(child: Text('No users found.'));
+                    return const Center(
+                        child: LoadingPlatformV2(
+                      size: 60,
+                      color: Colors.blue,
+                    ));
                   }
 
-                  final users = snapshot.data!.docs;
+                  if (snapshot.hasError) {
+                    return Center(child: Text("Error: ${snapshot.error}"));
+                  }
+
+                  final data = snapshot.data ?? [];
+
+                  if (data.isEmpty) {
+                    return Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          SizedBox(
+                              width: 250,
+                              height: 250,
+                              child: Lottie.asset('assets/svg/data.json')),
+                          Text(
+                            'ບໍ່ມີຂໍ້ມູນການລາພັກ',
+                            style: GoogleFonts.notoSansLao(fontSize: 16),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
 
                   return ListView.builder(
-                    itemCount: users.length,
+                    itemCount: data.length,
                     itemBuilder: (context, index) {
-                      final user = users[index].data() as Map<String, dynamic>;
-                      final userId = users[index].id;
+                      final employee = data[index];
+                      final leave = employee['leave'];
+
+                      var dataStatus =
+                          getCheckStatus(leave['status'].toString());
+                      Color colorStatus = dataStatus['color'];
                       if (!_searchName.isEmpty &&
-                          !user['name']
+                          !employee['name']
                               .toString()
                               .toLowerCase()
                               .contains(_searchName.toLowerCase())) {
                         return SizedBox.shrink(); // Skip this user
                       }
 
-                      return Card(
-                        elevation: 0,
-                        color: Colors.white,
-                        child: Row(
-                          children: [
-                            Container(
-                              decoration: BoxDecoration(
-                                  color: colors[index % colors.length],
-                                  borderRadius: const BorderRadius.only(
-                                      topLeft: Radius.circular(12),
-                                      bottomLeft: Radius.circular(12))),
-                              height: 72,
-                              width: 15,
+                      return GestureDetector(
+                        onTap: () {
+                          bottoSheetApp(context, leave, employee);
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 10),
+                          child: Container(
+                              child: Container(
+                            decoration: BoxDecoration(
+                              border:
+                                  Border.all(color: Colors.white, width: 1.0),
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(20.0),
                             ),
-                            Expanded(
-                              child: ExpansionTile(
-                                title: Text(
-                                  user['name'],
-                                  style: GoogleFonts.notoSansLao(
-                                    textStyle: const TextStyle(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.black,
-                                    ),
-                                  ),
-                                ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(12),
+                              child: Column(
                                 children: [
-                                  StreamBuilder<QuerySnapshot>(
-                                    stream: FirebaseFirestore.instance
-                                        .collection('Employee')
-                                        .doc(userId)
-                                        .collection('Leave')
-                                        .snapshots(),
-                                    builder: (context, orderSnapshot) {
-                                      if (orderSnapshot.connectionState ==
-                                          ConnectionState.waiting) {
-                                        return const Padding(
-                                          padding: EdgeInsets.all(8.0),
-                                          child: Center(
-                                              child:
-                                                  CircularProgressIndicator()),
-                                        );
-                                      } else if (orderSnapshot.hasError) {
-                                        return Padding(
-                                          padding: const EdgeInsets.all(8.0),
-                                          child: Center(
-                                              child: Text(
-                                                  'Error: ${orderSnapshot.error}')),
-                                        );
-                                      } else if (!orderSnapshot.hasData ||
-                                          orderSnapshot.data!.docs.isEmpty) {
-                                        return Padding(
-                                            padding: EdgeInsets.all(8.0),
-                                            child: Center(
-                                              child: Text(
-                                                'ບໍ່ມີຂໍໍມູນ.',
-                                                style: GoogleFonts.notoSansLao(
-                                                  textStyle: const TextStyle(
-                                                    fontSize: 15,
-                                                    color: Colors.black,
-                                                  ),
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          CircleAvatar(
+                                            radius: 20,
+                                            backgroundColor:
+                                                Color(0xFF7A5AF8).withAlpha(40),
+                                            child: Image.asset(
+                                                'assets/images/ot.png'),
+                                          ),
+                                          const SizedBox(width: 20),
+                                          Text(
+                                              // data.typeName
+                                              leave['leaveType'].toString(),
+                                              style: GoogleFonts.notoSansLao(
+                                                textStyle: const TextStyle(
+                                                  fontSize: 16,
                                                 ),
-                                              ),
-                                            ));
-                                      }
-
-                                      final orders = orderSnapshot.data!.docs;
-                                      final filteredOrders =
-                                          orders.where((order) {
-                                        final date =
-                                            (order['date'] as Timestamp)
-                                                .toDate();
-                                        if (_isMonthSelected) {
-                                          return date.month ==
-                                                  _selectedMonth.month &&
-                                              date.year == _selectedMonth.year;
-                                        } else {
-                                          return date.day ==
-                                                  _selectedDate.day &&
-                                              date.month ==
-                                                  _selectedDate.month &&
-                                              date.year == _selectedDate.year;
-                                        }
-                                      }).toList();
-                                      final searchFilteredOrders =
-                                          filteredOrders.where((order) {
-                                        final status = order['status']
-                                            .toString()
-                                            .toLowerCase();
-                                        return status.contains(_searchQuery);
-                                      }).toList();
-
-                                      return Column(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.start,
+                                              )),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 10),
+                                  Container(
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(10),
+                                      color: Color(0xFFEDEFF7),
+                                    ),
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: Column(
                                         crossAxisAlignment:
                                             CrossAxisAlignment.start,
                                         children: [
-                                          ListView.builder(
-                                            shrinkWrap: true,
-                                            physics:
-                                                const NeverScrollableScrollPhysics(),
-                                            itemCount:
-                                                searchFilteredOrders.length,
-                                            itemBuilder: (context, orderIndex) {
-                                              final record =
-                                                  searchFilteredOrders[
-                                                              orderIndex]
-                                                          .data()
-                                                      as Map<String, dynamic>;
-                                              List<dynamic> imageUrls =
-                                                  record['imageUrl'] is List
-                                                      ? record['imageUrl']
-                                                      : [record['imageUrl']];
-
-                                              return ExpansionTile(
-                                                title: Text(
-                                                  "ວັນທີ: ${DateFormat.yMMMMEEEEd().format((record['date'] as Timestamp).toDate())}",
-                                                  style:
-                                                      GoogleFonts.notoSansLao(
-                                                    textStyle: const TextStyle(
-                                                      fontSize: 15,
-                                                      color: Colors.black,
-                                                    ),
+                                          Row(
+                                            children: [
+                                              CircleAvatar(
+                                                radius: 30,
+                                                backgroundColor:
+                                                    Colors.grey[200],
+                                                child: ClipOval(
+                                                  child: CachedNetworkImage(
+                                                    imageUrl:
+                                                        employee['profileImage']
+                                                            .toString(),
+                                                    width: 110,
+                                                    height: 110,
+                                                    fit: BoxFit.cover,
+                                                    placeholder: (context,
+                                                            url) =>
+                                                        const Center(
+                                                            child:
+                                                                LoadingPlatformV2()),
+                                                    errorWidget: (context, url,
+                                                            error) =>
+                                                        const Icon(Icons.error,
+                                                            size: 40,
+                                                            color: Colors.red),
                                                   ),
                                                 ),
-                                                children: [
-                                                  Padding(
-                                                    padding:
-                                                        const EdgeInsets.all(
-                                                            20.0),
-                                                    child: Column(
-                                                      crossAxisAlignment:
-                                                          CrossAxisAlignment
-                                                              .start,
-                                                      children: [
-                                                        Text(
-                                                          'ຈາກວັນທີ: ${DateFormat.yMMMMEEEEd().format((record['fromDate'] as Timestamp).toDate())}',
-                                                          style: GoogleFonts
-                                                              .notoSansLao(
-                                                                  fontSize: 15),
-                                                        ),
-                                                        const SizedBox(
-                                                            height: 5),
-                                                        Text(
-                                                          'ວັນທີສີ້ນສຸດ: ${DateFormat.yMMMMEEEEd().format((record['toDate'] as Timestamp).toDate())}',
-                                                          style: GoogleFonts
-                                                              .notoSansLao(
-                                                                  fontSize: 15),
-                                                        ),
-                                                        SizedBox(height: 5),
-                                                        Text(
-                                                          '${record['daySummary']}',
-                                                          style: GoogleFonts
-                                                              .notoSansLao(
-                                                                  fontSize: 15),
-                                                        ),
-                                                        SizedBox(height: 5),
-                                                        Text(
-                                                          'ເຫດຜົນ: ${record['doc']}',
-                                                          style: GoogleFonts
-                                                              .notoSansLao(
-                                                                  fontSize: 15),
-                                                        ),
-                                                        SizedBox(height: 5),
-                                                        Text(
-                                                          'ປະເພດລາພັກ: ${record['leaveType']}',
-                                                          style: GoogleFonts
-                                                              .notoSansLao(
-                                                                  fontSize: 15),
-                                                        ),
-                                                        SizedBox(height: 5),
-                                                        Row(
-                                                          mainAxisAlignment:
-                                                              MainAxisAlignment
-                                                                  .spaceBetween,
-                                                          children: [
-                                                            TextButton(
-                                                              onPressed: () {
-                                                                _showEditStatusDialog(
-                                                                    record[
-                                                                        'status'],
-                                                                    userId,
-                                                                    searchFilteredOrders[
-                                                                            orderIndex]
-                                                                        .id);
-                                                              },
-                                                              style: TextButton
-                                                                  .styleFrom(
-                                                                backgroundColor:
-                                                                    getStatusColor(
-                                                                        record[
-                                                                            'status']),
-                                                                foregroundColor:
-                                                                    Colors
-                                                                        .white,
-                                                              ),
-                                                              child: Text(
-                                                                'ສະຖານະ: ${record['status']}',
-                                                                style: GoogleFonts
-                                                                    .notoSansLao(
-                                                                        fontSize:
-                                                                            15,
-                                                                        color: Colors
-                                                                            .white),
-                                                              ),
-                                                            ),
-                                                            TextButton(
-                                                              onPressed: () {
-                                                                PanaraConfirmDialog
-                                                                    .showAnimatedGrow(
-                                                                  context,
-                                                                  color: Colors
-                                                                      .blue,
-                                                                  title:
-                                                                      "!!!!...!!!!",
-                                                                  message:
-                                                                      "ທ່ານຕ້ອງການລົບແທ້ບໍ່.",
-                                                                  confirmButtonText:
-                                                                      "ຕົກລົງ",
-                                                                  cancelButtonText:
-                                                                      "ຍົກເລີກ",
-                                                                  onTapCancel:
-                                                                      () {
-                                                                    Navigator.pop(
-                                                                        context);
-                                                                  },
-                                                                  onTapConfirm:
-                                                                      () async {
-                                                                    try {
-                                                                      await FirebaseFirestore
-                                                                          .instance
-                                                                          .collection(
-                                                                              'Employee')
-                                                                          .doc(
-                                                                              userId)
-                                                                          .collection(
-                                                                              'Leave')
-                                                                          .doc(searchFilteredOrders[orderIndex]
-                                                                              .id)
-                                                                          .delete();
-
-                                                                      Navigator.pop(
-                                                                          context);
-                                                                      ScaffoldMessenger.of(
-                                                                              context)
-                                                                          .showSnackBar(
-                                                                        SnackBar(
-                                                                            content:
-                                                                                Text('ການລາພັກຖືກລົບສຳເລັດ')),
-                                                                      );
-                                                                    } catch (e) {
-                                                                      Navigator.pop(
-                                                                          context);
-                                                                      ScaffoldMessenger.of(
-                                                                              context)
-                                                                          .showSnackBar(
-                                                                        SnackBar(
-                                                                            content:
-                                                                                Text('ມີບັນຫາໃນການລົບການລາພັກ: $e')),
-                                                                      );
-                                                                    }
-                                                                  },
-                                                                  panaraDialogType:
-                                                                      PanaraDialogType
-                                                                          .success,
-                                                                );
-                                                              },
-                                                              style: TextButton
-                                                                  .styleFrom(
-                                                                      backgroundColor:
-                                                                          Colors
-                                                                              .redAccent),
-                                                              child: Row(
-                                                                children: [
-                                                                  Text(
-                                                                    'ລົບການລາພັກ',
-                                                                    style: GoogleFonts.notoSansLao(
-                                                                        fontSize:
-                                                                            15,
-                                                                        color: Colors
-                                                                            .white),
-                                                                  ),
-                                                                  SizedBox(
-                                                                      width: 5),
-                                                                  FaIcon(FontAwesomeIcons
-                                                                      .trashCan),
-                                                                ],
-                                                              ),
-                                                            ),
-                                                          ],
-                                                        ),
-                                                        SizedBox(height: 5),
-                                                        SingleChildScrollView(
-                                                          scrollDirection:
-                                                              Axis.horizontal,
-                                                          child: Row(
-                                                            children: imageUrls
-                                                                .map<Widget>(
-                                                                    (imageUrl) {
-                                                              return GestureDetector(
-                                                                onTap: () {
-                                                                  Navigator
-                                                                      .push(
-                                                                    context,
-                                                                    MaterialPageRoute(
-                                                                      builder: (context) =>
-                                                                          FullScreenImage(
-                                                                              imageUrl: imageUrls),
-                                                                    ),
-                                                                  );
-                                                                },
-                                                                child: Padding(
-                                                                  padding:
-                                                                      const EdgeInsets
-                                                                          .only(
-                                                                          right:
-                                                                              10.0),
-                                                                  child: Image
-                                                                      .network(
-                                                                    imageUrl,
-                                                                    width: 150,
-                                                                    height: 150,
-                                                                    fit: BoxFit
-                                                                        .cover,
-                                                                    loadingBuilder: (BuildContext
-                                                                            context,
-                                                                        Widget
-                                                                            child,
-                                                                        ImageChunkEvent?
-                                                                            loadingProgress) {
-                                                                      if (loadingProgress ==
-                                                                          null) {
-                                                                        return child;
-                                                                      }
-                                                                      return Center(
-                                                                        child: LoadingAnimationWidget
-                                                                            .inkDrop(
-                                                                          size:
-                                                                              50,
-                                                                          color:
-                                                                              Colors.orange,
-                                                                        ),
-                                                                      );
-                                                                    },
-                                                                    errorBuilder: (BuildContext
-                                                                            context,
-                                                                        Object
-                                                                            exception,
-                                                                        StackTrace?
-                                                                            stackTrace) {
-                                                                      return Text(
-                                                                        'ບໍ່ມີຮູບພາບ',
-                                                                        style: GoogleFonts.notoSansLao(
-                                                                            fontSize:
-                                                                                15),
-                                                                      );
-                                                                    },
-                                                                  ),
-                                                                ),
-                                                              );
-                                                            }).toList(),
-                                                          ),
-                                                        ),
-                                                        SizedBox(height: 10),
-                                                        GestureDetector(
-                                                          onTap: () {
-                                                            final documentUrl =
-                                                                record['documentUrl']
-                                                                    as String;
-                                                            Navigator.push(
-                                                              context,
-                                                              MaterialPageRoute(
-                                                                builder:
-                                                                    (context) =>
-                                                                        Pdfview(
-                                                                  documentUrl:
-                                                                      documentUrl,
-                                                                  leaveid: orders[
-                                                                          orderIndex]
-                                                                      .id,
-                                                                  users: userId,
-                                                                ),
-                                                              ),
-                                                            );
-
-                                                            print(
-                                                                "ID${documentUrl}");
-                                                            print(
-                                                                "User${orders[orderIndex].id}");
-                                                          },
-                                                          child: Container(
-                                                            padding:
-                                                                EdgeInsets.all(
-                                                                    8.0),
-                                                            color: Colors.grey,
-                                                            child: Row(
-                                                              children: [
-                                                                const Icon(
-                                                                  Icons
-                                                                      .picture_as_pdf,
-                                                                  color: Colors
-                                                                      .white,
-                                                                ),
-                                                                Text(
-                                                                  'ເປີດ PDF ເພື່ອເບິ່ງເອກະສານຂໍລາພັກ',
-                                                                  style: GoogleFonts.notoSansLao(
-                                                                      fontSize:
-                                                                          15,
-                                                                      color: Colors
-                                                                          .white),
-                                                                ),
-                                                              ],
-                                                            ),
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    ),
+                                              ),
+                                              const SizedBox(width: 10),
+                                              Text(
+                                                employee['name'] ?? '',
+                                                style: GoogleFonts.notoSansLao(
+                                                  textStyle: const TextStyle(
+                                                    fontSize: 16,
                                                   ),
-                                                ],
-                                              );
-                                            },
+                                                ),
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                              const SizedBox(height: 5),
+                                            ],
+                                          ),
+                                          const SizedBox(
+                                            height: 10,
+                                          ),
+                                          Divider(
+                                            color: Colors.grey.withAlpha(60),
+                                          ),
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              Text(
+                                                '${DateFormat.d().format((leave['date'] as Timestamp).toDate())} - ${DateFormat.yMMMMd().format((leave['toDate'] as Timestamp).toDate())}',
+                                                style: GoogleFonts.notoSansLao(
+                                                    fontSize: 15),
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                              Text(
+                                                '${leave['daySummary'].toString()}',
+                                                style: GoogleFonts.notoSansLao(
+                                                    fontSize: 15),
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ],
                                           ),
                                         ],
-                                      );
-                                    },
+                                      ),
+                                    ),
                                   ),
                                 ],
                               ),
                             ),
-                          ],
+                          )),
                         ),
-                      ).animate().scaleXY(
-                          begin: 0,
-                          end: 1,
-                          delay: 500.ms,
-                          duration: 500.ms,
-                          curve: Curves.easeInOutCubic);
+                      );
                     },
                   );
                 },
@@ -651,8 +723,6 @@ class _EmployeeLeaveSerceenState extends State<EmployeeLeaveSerceen> {
                     ),
                   ),
                 );
-
-                logger.d(_selectedDate);
               },
               backgroundColor: Colors.orangeAccent),
         ],
@@ -660,361 +730,189 @@ class _EmployeeLeaveSerceenState extends State<EmployeeLeaveSerceen> {
     );
   }
 
-  Row selectDateWidget(BuildContext context) {
-    return Row(
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(10.0),
-          child: GestureDetector(
-            onTap: () async {
-              showDialog(
-                context: context,
-                builder: (BuildContext context) {
-                  DateTime now = DateTime.now();
-                  DateTime maxDate = DateTime(
-                      now.year, now.month + 1, 0); // Last day of next month
-                  DateTime? tempSelectedDate =
-                      _selectedDate; // Change variable name to reflect day selection
-                  return AlertDialog(
-                    elevation: 2,
-                    shadowColor: Colors.blue,
-                    backgroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15.0),
-                    ),
-                    content: SizedBox(
-                      height: 300,
-                      width: 450,
-                      child: CalendarDatePicker(
-                        initialDate: _selectedDate ?? DateTime.now(),
-                        firstDate: DateTime(2000),
-                        lastDate: DateTime.now(),
-                        onDateChanged: (date) {
-                          setState(() {
-                            tempSelectedDate = date;
-                          });
-                        },
-                        selectableDayPredicate: (date) {
-                          // Optional: Customize which days are selectable
-                          return true;
-                        },
-                      ),
-                    ),
-                    actions: [
-                      ElevatedButton(
-                        onPressed: () => Navigator.pop(context),
-                        style: ElevatedButton.styleFrom(
-                          elevation: 0,
-                          backgroundColor: Colors.grey,
-                        ),
-                        child: Text(
-                          'ຍົກເລີກ',
-                          style: GoogleFonts.notoSansLao(
-                            textStyle: const TextStyle(
-                              fontSize: 15,
-                              color: Colors.black,
-                            ),
-                          ),
-                        ),
-                      ),
-                      ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          elevation: 0,
-                          backgroundColor: Colors.blue,
-                        ),
-                        onPressed: () {
-                          if (tempSelectedDate != null &&
-                              tempSelectedDate != _selectedDate) {
-                            setState(() {
-                              _selectedDate = tempSelectedDate!;
-                              _day = DateFormat('dd').format(_selectedDate!);
-                              _isMonthSelected = true;
-                            });
-                          }
+  Future<dynamic> bottoSheetApp(
+      BuildContext context, dynamic leaveData, dynamic employee) {
+    return showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        builder: (BuildContext context) {
+          return FractionallySizedBox(
+            heightFactor: 0.8,
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Theme.of(context).canvasColor,
+                borderRadius:
+                    const BorderRadius.vertical(top: Radius.circular(16)),
+              ),
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    GestureDetector(
+                        onTap: () {
                           Navigator.pop(context);
                         },
-                        child: Text(
-                          'ຕົກລົງ',
-                          style: GoogleFonts.notoSansLao(
-                            textStyle: const TextStyle(
-                              fontSize: 15,
-                              color: Colors.black,
-                            ),
+                        child: const Align(
+                            alignment: Alignment.topRight,
+                            child: Icon(Icons.close))),
+                    Align(
+                      alignment: Alignment.center,
+                      child: ClipOval(
+                        child: CachedNetworkImage(
+                          imageUrl: employee['profileImage'],
+                          width: 100,
+                          height: 100,
+                          fit: BoxFit.cover,
+                          placeholder: (context, url) => const Center(
+                            child: LoadingPlatformV2(),
                           ),
+                          errorWidget: (context, url, error) =>
+                              const Icon(Icons.error),
                         ),
                       ),
-                    ],
-                  );
-                },
-              );
-            },
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-              decoration: BoxDecoration(
-                color: Color(0xFF577DF4),
-                borderRadius: BorderRadius.circular(5),
-              ),
-              child: Row(
-                children: [
-                  const Icon(Icons.calendar_month, color: Colors.white),
-                  Text(
-                    "ເລືອກວັນທີ: ${_day.isEmpty ? "ເລືອກວັນທີ" : _day}",
-                    style: GoogleFonts.notoSansLao(
-                      textStyle: const TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
                     ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.all(10.0),
-          child: GestureDetector(
-            onTap: () async {
-              showDialog(
-                context: context,
-                builder: (BuildContext context) {
-                  DateTime now = DateTime.now();
-                  DateTime maxDate = DateTime(now.year, now.month + 1, 0);
-                  DateTime? tempSelectedMonth = _selectedMonth;
-                  return AlertDialog(
-                    elevation: 2,
-                    shadowColor: Colors.blue,
-                    backgroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15.0),
-                    ),
-                    content: SizedBox(
-                      height: 300,
-                      width: 450,
-                      child: MonthPicker(
-                        selectedCellDecoration: const BoxDecoration(
-                          color: Colors.blue,
-                          shape: BoxShape.circle,
-                        ),
-                        selectedCellTextStyle: GoogleFonts.notoSansLao(
-                          fontSize: 14,
-                        ),
-                        enabledCellsTextStyle: GoogleFonts.notoSansLao(
-                          fontSize: 14,
-                        ),
-                        disabledCellsTextStyle: GoogleFonts.notoSansLao(
-                            fontSize: 14, color: Colors.grey),
-                        currentDateTextStyle: GoogleFonts.notoSansLao(
-                          fontSize: 14,
-                        ),
-                        currentDateDecoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            width: 1,
-                            color: Colors.black,
-                          ),
-                        ),
-                        splashColor: Colors.blue,
-                        slidersColor: Colors.black,
-                        centerLeadingDate: true,
-                        minDate: DateTime(2000),
-                        currentDate: _selectedMonth ?? DateTime.now(),
-                        selectedDate: _selectedMonth ?? DateTime.now(),
-                        onDateSelected: (month) {
-                          setState(() {
-                            tempSelectedMonth = month;
-                          });
-                        },
-                        maxDate: maxDate,
-                      ),
-                    ),
-                    actions: [
-                      ElevatedButton(
-                          onPressed: () => Navigator.pop(context),
-                          style: ElevatedButton.styleFrom(
-                            elevation: 0,
-                            backgroundColor: Colors.grey,
-                          ),
-                          child: Text('ຍົກເລີກ',
-                              style: GoogleFonts.notoSansLao(
-                                textStyle: const TextStyle(
-                                  fontSize: 15,
-                                  color: Colors.black,
-                                ),
-                              ))),
-                      ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          elevation: 0,
-                          backgroundColor: Colors.blue,
-                        ),
-                        onPressed: () {
-                          if (tempSelectedMonth != null &&
-                              tempSelectedMonth != _selectedMonth) {
-                            setState(() {
-                              _selectedMonth = tempSelectedMonth!;
-                              _month =
-                                  DateFormat('MMMM').format(_selectedMonth!);
-                              _isMonthSelected = true;
-                            });
-                          }
-                          Navigator.pop(context);
-                        },
-                        child: Text(
-                          'ຕົກລົງ',
-                          style: GoogleFonts.notoSansLao(
-                            textStyle: const TextStyle(
-                              fontSize: 15,
-                              color: Colors.black,
-                            ),
-                          ),
-                        ),
-                      )
-                    ],
-                  );
-                },
-              );
-            },
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-              decoration: BoxDecoration(
-                color: Color(0xFF577DF4),
-                borderRadius: BorderRadius.circular(5),
-              ),
-              child: Row(
-                children: [
-                  const Icon(Icons.calendar_month, color: Colors.white),
-                  Text(
-                    "ເລືອກເດືອນ: ${_month.isEmpty ? "ເລືອກເດືອນ" : _month}",
-                    style: GoogleFonts.notoSansLao(
-                      textStyle: const TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  void _showEditStatusDialog(
-      String currentStatus, String userId, String messageId) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        String selectedStatus =
-            currentStatus; // Holds the status selected by the user
-
-        return AlertDialog(
-          title: Text(
-            'ແກ້ໄຂສະຖານະ',
-            style: GoogleFonts.notoSansLao(
-                fontSize: 18, fontWeight: FontWeight.bold),
-          ),
-          content: StatefulBuilder(
-            builder: (BuildContext context, StateSetter setState) {
-              return DropdownButton<String>(
-                value: selectedStatus,
-                onChanged: (newValue) {
-                  setState(() {
-                    selectedStatus = newValue!;
-                  });
-
-                  // Show a message (using Snackbar in this case)
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        'ເຈົ້າເລືອກ: $newValue',
+                    const SizedBox(height: 5),
+                    Align(
+                      alignment: Alignment.center,
+                      child: Text(
+                        employee['name'],
                         style: GoogleFonts.notoSansLao(fontSize: 15),
                       ),
-                      duration: Duration(seconds: 2),
                     ),
-                  );
-                },
-                items: ['ອະນຸມັດແລ້ວ', 'ລໍຖ້າອະນຸມັດ', 'ປະຕິເສດ']
-                    .map<DropdownMenuItem<String>>((String value) {
-                  return DropdownMenuItem<String>(
-                    value: value,
-                    child: Text(
-                      value,
-                      style: GoogleFonts.notoSansLao(fontSize: 15),
+                    const SizedBox(height: 15),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 40,
+                      child: OutlinedButton(
+                        onPressed: () async {},
+                        style: OutlinedButton.styleFrom(
+                            side: BorderSide(
+                                color: leaveData['status'] == 'ອະນຸມັດແລ້ວ'
+                                    ? Colors.blue
+                                    : Colors.orangeAccent),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(50),
+                            ),
+                            backgroundColor:
+                                leaveData['status'] == 'ອະນຸມັດແລ້ວ'
+                                    ? Colors.blue
+                                    : Colors.orangeAccent),
+                        child: Text(
+                          leaveData['status'] == 'ອະນຸມັດແລ້ວ'
+                              ? 'ອະນຸມັດແລ້ວ'
+                              : 'ຖືກປະຕິເສດ',
+                          style: GoogleFonts.notoSansLao(
+                              fontSize: 15, color: Colors.white),
+                        ),
+                      ),
                     ),
-                  );
-                }).toList(),
-              );
-            },
-          ),
-          actions: [
-            TextButton(
-              child:
-                  Text('ຍົກເລີກ', style: GoogleFonts.notoSansLao(fontSize: 15)),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
+                    const SizedBox(height: 10),
+                    Text.rich(
+                      TextSpan(
+                        style:
+                            Theme.of(context).textTheme.titleSmall!.copyWith(),
+                        text: 'ປະເພດລາພັກ: ',
+                        children: [
+                          TextSpan(
+                            text: leaveData['leaveType'] ?? 'N/A',
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodyMedium!
+                                .copyWith(color: const Color(0xFF99A1BE)),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      'ໄລຍະເວລາລາ:',
+                      style: GoogleFonts.notoSansLao(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 5),
+                    CustomTextFieldDesign(
+                      hintText:
+                          'on ${DateFormat.d().format((leaveData['date'] as Timestamp).toDate())} - ${DateFormat.yMMMMd().format((leaveData['toDate'] as Timestamp).toDate())}',
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      'ເຫດຜົນການລາ:',
+                      style: GoogleFonts.notoSansLao(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 5),
+                    CustomTextFieldDesign(
+                      maxLines: 4,
+                      hintText: leaveData['doc'] ?? 'ບໍ່ມີເຫດຜົນ',
+                    ),
+                    const SizedBox(height: 10),
+                    if (leaveData['imageUrl'] != null &&
+                        leaveData['imageUrl'] is List &&
+                        (leaveData['imageUrl'] as List).isNotEmpty)
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'ຮູບພາບແນບ:',
+                            style: GoogleFonts.notoSansLao(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(height: 5),
+                          Container(
+                            decoration: const BoxDecoration(
+                              color: Colors.white,
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(15),
+                                child: CachedNetworkImage(
+                                  imageUrl: leaveData['imageUrl'][0],
+                                  fit: BoxFit.cover,
+                                  placeholder: (context, url) => const Center(
+                                    child: LoadingPlatformV2(),
+                                  ),
+                                  errorWidget: (context, url, error) =>
+                                      const Icon(Icons.error),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                  ],
+                ),
+              ),
             ),
-            TextButton(
-              child:
-                  Text('ບັນທຶກ', style: GoogleFonts.notoSansLao(fontSize: 15)),
-              onPressed: () async {
-                await FirebaseFirestore.instance
-                    .collection('Employee')
-                    .doc(userId)
-                    .collection('Leave')
-                    .doc(messageId)
-                    .update({'status': selectedStatus});
-
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        );
-      },
-    );
+          );
+        });
   }
 
-  Widget buildSearchField() {
-    return Container(
-      height: 50,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(10.0),
-      ),
-      child: TextField(
-        onChanged: (value) {
-          setState(() {
-            _searchQuery = value.toLowerCase(); // Set the search name
-          });
-        },
-        decoration: InputDecoration(
-          suffixIcon: Icon(Icons.search),
-          contentPadding: EdgeInsets.fromLTRB(16, 0, 16, 0),
-          hintStyle: TextStyle(color: Colors.black),
-          border: InputBorder.none,
-          labelText: 'ຄົ້ນຫາສະຖານະ...',
-          labelStyle: GoogleFonts.notoSansLao(
-            textStyle: const TextStyle(
-              color: Colors.black, // You can set the color here
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Color getStatusColor(String status) {
-    switch (status) {
-      case 'ອະນຸມັດແລ້ວ':
-        return Colors.blue;
-      case 'ປະຕິເສດ':
-        return Colors.red;
+  Map<String, dynamic> getCheckStatus(String title) {
+    switch (title) {
+      case "ອະນຸມັດແລ້ວ":
+        return {
+          'color': const Color(0xFF23A26D),
+        };
+      case "ປະຕິເສດ":
+        return {
+          'color': const Color(0xFFF28C84),
+        };
+      case "ລໍຖ້າອະນຸມັດ":
+        return {
+          'color': const Color(0xFFFFCE08),
+        };
       default:
-        return Colors.orangeAccent;
+        return {
+          'color': Colors.blueAccent,
+        };
     }
   }
 }

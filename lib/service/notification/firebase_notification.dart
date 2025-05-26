@@ -16,13 +16,13 @@ class LocalNotificationService {
 
   Future<void> uploadFCM() async {
     try {
-      // Get the current user
+
       User? _currentUser = FirebaseAuth.instance.currentUser;
       if (_currentUser == null) {
         throw Exception('User is not logged in');
       }
 
-      // Get FCM token
+
       String? token = await FirebaseMessaging.instance.getToken();
       print('getToken: $token');
       if (token != null) {
@@ -31,7 +31,7 @@ class LocalNotificationService {
         }, SetOptions(merge: true));
       }
 
-      // Listen for token refresh
+
       FirebaseMessaging.instance.onTokenRefresh.listen((newToken) async {
         print('onTokenRefresh: $newToken');
         await FirebaseFirestore.instance.collection('Users').doc(_currentUser.uid).set({

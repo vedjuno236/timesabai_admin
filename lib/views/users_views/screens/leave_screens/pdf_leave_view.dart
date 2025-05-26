@@ -2,12 +2,15 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
+import 'package:admin_timesabai/views/users_views/screens/notification/notification_screens.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dio/dio.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:icons_plus/icons_plus.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:path_provider/path_provider.dart';
@@ -84,11 +87,11 @@ class _PdfviewState extends State<Pdfview> {
   }
 
   final List<Map<String, dynamic>> iconTextData = [
-    {'icon': Icons.edit, 'text': 'Signature'},
-    {'icon': Icons.date_range, 'text': 'Date'},
-    {'icon': Icons.text_fields, 'text': 'Text'},
-    {'icon': Icons.perm_identity, 'text': 'Name'},
-    {'icon': Icons.image, 'text': 'Image'},
+    {'icon': Icons.edit, 'text': 'Signature', 'string': 'ລາຍເຊັນ'},
+    {'icon': Icons.date_range, 'text': 'Date', 'string': 'ວັນທີ'},
+    {'icon': Icons.text_fields, 'text': 'Text', 'string': 'ຕົວອັກສອນ'},
+    {'icon': Icons.perm_identity, 'text': 'Name', 'string': 'ຊື່'},
+    {'icon': Icons.image, 'text': 'Image', 'string': 'ຮູບພາບ'},
   ];
 
   Future<void> _addSignatureToPdf() async {
@@ -131,8 +134,15 @@ class _PdfviewState extends State<Pdfview> {
       await updatedFile.writeAsBytes(updatedPdfBytes);
 
       // Notify user
-      ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('PDF updated and signature added.')));
+      Fluttertoast.showToast(
+        msg: 'ເພີ່ມລາຍເຊັນເຂົ້າ ເອກະສານສໍາເລັດ',
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.CENTER,
+        timeInSecForIosWeb: 1,
+        backgroundColor: Colors.blue,
+        textColor: Colors.white,
+        fontSize: 16.0,
+      );
     } catch (e) {
       print(e);
     } finally {
@@ -173,11 +183,9 @@ class _PdfviewState extends State<Pdfview> {
             ),
             child: RepaintBoundary(
               key: _repaintBoundaryKey,
-              // Wrap the signature pad with RepaintBoundary
               child: SfSignaturePad(
                 key: _signaturePadKey,
                 backgroundColor: Colors.transparent,
-                // Set background to transparent
                 strokeColor: Colors.black,
                 minimumStrokeWidth: 1.0,
                 maximumStrokeWidth: 4.0,
@@ -195,7 +203,10 @@ class _PdfviewState extends State<Pdfview> {
                   onPressed: () {
                     sf.currentState?.clear();
                   },
-                  child: const Text('Clear'),
+                  child: Text(
+                    'ລືບ',
+                    style: GoogleFonts.notoSansLao(),
+                  ),
                 ),
                 ElevatedButton(
                   onPressed: isLoadingPop
@@ -209,7 +220,10 @@ class _PdfviewState extends State<Pdfview> {
                           valueColor:
                               AlwaysStoppedAnimation<Color>(Colors.white),
                         )
-                      : const Text("Save"),
+                      : Text(
+                          "ບັນທືກ",
+                          style: GoogleFonts.notoSansLao(),
+                        ),
                 ),
               ],
             ),
@@ -356,30 +370,24 @@ class _PdfviewState extends State<Pdfview> {
 
   Future<void> _savePdf() async {
     setState(() {
-      isLoadingPdf = true; // Show loading indicator
+      isLoadingPdf = true;
     });
     try {
-      // โหลดเอกสาร PDF เดิม
       Response response = await Dio().get(widget.documentUrl,
           options: Options(responseType: ResponseType.bytes));
       List<int> pdfBytes = response.data;
 
-      // สร้างเอกสาร PDF
       PdfDocument document = PdfDocument(inputBytes: pdfBytes);
       PdfPage page = document.pages[0];
 
-      // ขนาดของหน้า PDF
       final double pdfPageWidth = page.size.width;
       final double pdfPageHeight = page.size.height;
 
-      // ขนาดของหน้าจอ
       final screenSize = MediaQuery.of(context).size;
 
-      // อัตราส่วนการสเกล
       double scaleX = pdfPageWidth / screenSize.width;
       double scaleY = pdfPageHeight / screenSize.height;
 
-      // ความสูงและความกว้างขององค์ประกอบบนหน้าจอ
       double signatureWidth = 100;
       double signatureHeight = 50;
       double imageWidth = 50;
@@ -387,11 +395,9 @@ class _PdfviewState extends State<Pdfview> {
       double textHeight = 20;
       double dateHeight = 10;
 
-      // ปรับตำแหน่งของลายเซ็น
       double adjustedSignatureX = _signaturePosition.dx * scaleX;
       double adjustedSignatureY = pdfPageHeight - signatureHeight - 30;
 
-      // วาดลายเซ็น
       if (imageBytes != null) {
         final PdfBitmap signatureBitmap = PdfBitmap(imageBytes!);
         page.graphics.drawImage(
@@ -401,11 +407,9 @@ class _PdfviewState extends State<Pdfview> {
         );
       }
 
-      // ปรับตำแหน่งของรูปภาพ
       double adjustedImageX = _imagesPosition.dx * scaleX;
       double adjustedImageY = pdfPageHeight - imageHeight - 30;
 
-      // วาดรูปภาพ
       if (images != null) {
         final PdfBitmap imageBitmap = PdfBitmap(images!);
         page.graphics.drawImage(
@@ -415,11 +419,9 @@ class _PdfviewState extends State<Pdfview> {
         );
       }
 
-      // ปรับตำแหน่งของข้อความ
       double adjustedTextX = _textPosition.dx * scaleX;
       double adjustedTextY = pdfPageHeight - textHeight - 30;
 
-      // วาดข้อความ
       if (_textToShow != null) {
         final PdfFont font =
             PdfStandardFont(PdfFontFamily.helvetica, 20 * scaleY);
@@ -430,12 +432,9 @@ class _PdfviewState extends State<Pdfview> {
               adjustedTextX, adjustedTextY, page.size.width, page.size.height),
         );
       }
-
-      // ปรับตำแหน่งของวันที่
       double adjustedDateX = _datePosition.dx * scaleX;
       double adjustedDateY = pdfPageHeight - dateHeight - 30;
 
-      // วาดวันที่
       final PdfFont dateFont =
           PdfStandardFont(PdfFontFamily.helvetica, 10 * scaleY);
       page.graphics.drawString(
@@ -479,59 +478,21 @@ class _PdfviewState extends State<Pdfview> {
           .doc(widget.users)
           .collection('Leave')
           .doc(widget.leaveid)
-          .update({'documentUrl': downloadUrl});
-
+          .update({'documentUrl': downloadUrl, 'status': "ອະນຸມັດແລ້ວ"});
       print("LeaveID🤮🤮${leaveDocId}");
 
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('PDF saved successfully at .')));
-
-      // showDialog(
-      //   context: context,
-      //   builder: (BuildContext context) {
-      //     return AlertDialog(
-      //       title: const Column(
-      //         children: [
-      //           Icon(Icons.check_circle, color: Colors.green,size: 100,), // Success icon
-      //
-      //         ],
-      //       ),
-      //       actions: <Widget>[
-      //         ElevatedButton(
-      //           style: ElevatedButton.styleFrom(
-      //             backgroundColor: Colors.green,
-      //             shape: RoundedRectangleBorder(
-      //               borderRadius: BorderRadius.circular(8),
-      //             ),
-      //           ),
-      //           child: Text(
-      //             'ເຊັນສໍາເລັດ OK',
-      //             style: GoogleFonts.notoSansLao(
-      //               fontSize: 15,
-      //               color: Colors.white,
-      //             ),
-      //           ),
-      //           onPressed: () {
-      //             NotificationHelper.scheduleNotification(
-      //               "ສະບາຍດີທ່ານ ຄະນະບໍດີ",
-      //               "ຂໍອະນຸຍາດເຊັນໃບລາພັກຂອງພະນັກງານ",
-      //               5,
-      //             );
-      //               Navigator.push(
-      //                 context,
-      //                 MaterialPageRoute(
-      //                   builder: (context) => HomeScreens(),
-      //                 ),
-      //               );
-      //             }
-      //         ),
-      //       ],
-      //     );
-      //   },
-      // );
+      Fluttertoast.showToast(
+        msg: 'ເຊັນໃບລາພັກສໍາລັດ !!!',
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.CENTER,
+        timeInSecForIosWeb: 1,
+        backgroundColor: Colors.blue,
+        textColor: Colors.white,
+        fontSize: 16.0,
+      );
 
       setState(() {
-        isLoadingPdf = false; // Hide loading indicator
+        isLoadingPdf = false;
       });
     } catch (e) {
       print('Error saving PDF: $e');
@@ -551,9 +512,9 @@ class _PdfviewState extends State<Pdfview> {
         .get();
 
     if (snapshot.docs.isNotEmpty) {
-      return snapshot.docs.first.id; // Get the first leave document ID
+      return snapshot.docs.first.id;
     }
-    return null; 
+    return null;
   }
 
   Future<void> _pickImageAndAddToPdf() async {
@@ -581,9 +542,19 @@ class _PdfviewState extends State<Pdfview> {
         actions: [
           IconButton(
             onPressed: () {
-              _savePdf();
+              _savePdf().whenComplete(() {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => NotificationScreens(),
+                  ),
+                );
+              });
             },
-            icon: const Icon(Icons.save),
+            icon: CircleAvatar(
+                backgroundColor: Colors.white,
+                radius: 20,
+                child: const Icon(IonIcons.save)),
           ),
         ],
         backgroundColor: const Color(0xFF577DF4),
@@ -741,7 +712,10 @@ class _PdfviewState extends State<Pdfview> {
                                       child: Icon(item['icon']),
                                     ),
                                   ),
-                                  Text(item['text']),
+                                  Text(
+                                    item['string'],
+                                    style: GoogleFonts.notoSansLao(),
+                                  ),
                                 ],
                               ),
                             );

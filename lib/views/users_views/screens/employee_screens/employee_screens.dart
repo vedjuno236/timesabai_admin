@@ -245,13 +245,16 @@ class _EmployeeScreensState extends State<EmployeeScreens> {
                 ),
                 onPressed: () async {
                   final String name = _nameController.text;
-                  if (name.isNotEmpty && employeeId != null) {
+                  final String id = _idController.text;
+
+                  if (name.isNotEmpty && id.isNotEmpty && employeeId != null) {
                     // Update the Firestore document
                     await FirebaseFirestore.instance
                         .collection('Employee')
                         .doc(employeeId)
-                        .update({"name": name});
+                        .update({"name": name, "id": id});
                     _nameController.text = '';
+                    _idController.text = '';
                     Navigator.of(context).pop();
                   }
                 },
