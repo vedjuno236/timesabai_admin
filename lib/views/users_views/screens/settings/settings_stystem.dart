@@ -7,6 +7,7 @@ import 'package:admin_timesabai/views/users_views/screens/settings/settings_loca
 import 'package:admin_timesabai/views/users_views/screens/settings/settings_times.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -144,296 +145,298 @@ class _SettingsStystemState extends State<SettingsStystem> {
         ),
         centerTitle: true,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SizedBox(height: 10),
-            Text(
-              "ຮູບພາບພື້ນຫລັງຂອງແອັບ *",
-              style: GoogleFonts.notoSansLao(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
-                  color: const Color(0xFF577DF4)),
-            ),
-            const SizedBox(height: 10),
-            Container(
-              height: 200,
-              width: double.infinity,
-              decoration: BoxDecoration(
-                color: Colors.blue.withOpacity(0.2),
-                image: _imageFile != null
-                    ? DecorationImage(
-                        image: FileImage(_imageFile!),
-                        fit: BoxFit.cover,
-                      )
-                    : firestoreImageUrl != null
-                        ? DecorationImage(
-                            image: NetworkImage(firestoreImageUrl!),
-                            fit: BoxFit.cover,
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+            const  SizedBox(height: 10),
+              Text(
+                "ຮູບພາບພື້ນຫລັງຂອງແອັບ *",
+                style: GoogleFonts.notoSansLao(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFF577DF4)),
+              ),
+              const SizedBox(height: 10),
+              Container(
+                height: 200,
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  color: Colors.blue.withOpacity(0.2),
+                  image: _imageFile != null
+                      ? DecorationImage(
+                          image: FileImage(_imageFile!),
+                          fit: BoxFit.cover,
+                        )
+                      : firestoreImageUrl != null
+                          ? DecorationImage(
+                              image: NetworkImage(firestoreImageUrl!),
+                              fit: BoxFit.cover,
+                            )
+                          : null,
+                ),
+                child: Center(
+                  child: GestureDetector(
+                    onTap: () async {
+                      String? documentId =
+                          await getDocumentIdForImage(firestoreImageUrl!);
+                      if (documentId != null) {
+                        getImage(documentId);
+                      } else {
+                        print('No document ID found for this image');
+                      }
+                    },
+                    child: _loading
+                        ? Center(
+                            child: LoadingAnimationWidget.hexagonDots(
+                              color: Colors.white,
+                              size: 100,
+                            ),
                           )
-                        : null,
-              ),
-              child: Center(
-                child: GestureDetector(
-                  onTap: () async {
-                    String? documentId =
-                        await getDocumentIdForImage(firestoreImageUrl!);
-                    if (documentId != null) {
-                      getImage(documentId);
-                    } else {
-                      print('No document ID found for this image');
-                    }
-                  },
-                  child: _loading
-                      ? Center(
-                          child: LoadingAnimationWidget.hexagonDots(
-                            color: Colors.white,
-                            size: 100,
-                          ),
-                        )
-                      : const Icon(
-                          Icons.cloud_upload,
-                          color: Colors.blue,
-                          size: 90,
-                        ),
-                ),
-              ),
-            ),
-            SizedBox(height: 40),
-            Column(
-              children: [
-                GestureDetector(
-                  onTap: () {
-                    Navigator.of(context).push(MaterialPageRoute(
-                        builder: (context) => const Settings_View()));
-                  },
-                  child: Container(
-                    width: double.infinity,
-                    child: Row(
-                      children: [
-                        Container(
-                          height: 60,
-                          width: 60,
-                          decoration: const BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: Color(0xFF577DF4),
-                          ),
-                          child: Icon(
-                            Ionicons.map,
-                            color: Colors.blue.shade100,
-                            size: 40,
-                          ),
-                        ),
-                        SizedBox(width: 20),
-                        Text(
-                          "ຈັດການຕໍາແໜ່ງຂອງແອັບ",
-                          style: GoogleFonts.notoSansLao(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        Spacer(),
-                        Container(
-                          width: 60,
-                          height: 60,
-                          decoration: BoxDecoration(
-                            color: Colors.grey.shade200,
-                            borderRadius: BorderRadius.circular(15),
-                          ),
-                          child: Icon(Ionicons.chevron_forward_outline),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                SizedBox(height: 20),
-                GestureDetector(
-                  onTap: () {
-                    Navigator.of(context).push(MaterialPageRoute(
-                        builder: (context) => Settings_Times()));
-                  },
-                  child: Container(
-                    width: double.infinity,
-                    child: Row(
-                      children: [
-                        Container(
-                          height: 60,
-                          width: 60,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: Colors.blue.shade100,
-                          ),
-                          child: const Icon(
-                            Ionicons.timer,
+                        : const Icon(
+                            Icons.cloud_upload,
                             color: Colors.blue,
-                            size: 49,
+                            size: 90,
                           ),
-                        ),
-                        SizedBox(width: 20),
-                        Text(
-                          "ຈັດການເວລາການເຂົ້າວຽກ",
-                          style: GoogleFonts.notoSansLao(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        Spacer(),
-                        Container(
-                          width: 60,
-                          height: 60,
-                          decoration: BoxDecoration(
-                            color: Colors.grey.shade200,
-                            borderRadius: BorderRadius.circular(15),
-                          ),
-                          child: Icon(Ionicons.chevron_forward_outline),
-                        )
-                      ],
-                    ),
                   ),
                 ),
-                SizedBox(height: 20),
-                GestureDetector(
-                  onTap: () {
-                    Navigator.of(context).push(MaterialPageRoute(
-                        builder: (context) => const NewsScreens()));
-                  },
-                  child: Container(
-                    width: double.infinity,
-                    child: Row(
-                      children: [
-                        Container(
-                          height: 60,
-                          width: 60,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: Colors.blue.shade100,
+              ),
+              SizedBox(height: 40),
+              Column(
+                children: [
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.of(context).push(MaterialPageRoute(
+                          builder: (context) => const Settings_View()));
+                    },
+                    child: Container(
+                      width: double.infinity,
+                      child: Row(
+                        children: [
+                          Container(
+                            height: 60,
+                            width: 60,
+                            decoration: const BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Color(0xFF577DF4),
+                            ),
+                            child: Icon(
+                              Ionicons.map,
+                              color: Colors.blue.shade100,
+                              size: 40,
+                            ),
                           ),
-                          child: const Icon(
-                            Ionicons.newspaper,
-                            color: Color(0xFF577DF4),
-                            size: 49,
+                          SizedBox(width: 20),
+                          Text(
+                            "ຈັດການຕໍາແໜ່ງຂອງແອັບ",
+                            style: GoogleFonts.notoSansLao(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
-                        ),
-                        SizedBox(width: 20),
-                        Text(
-                          "ຈັດການຂໍ້ມູນຂ່າວສານ",
-                          style: GoogleFonts.notoSansLao(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w600,
+                          Spacer(),
+                          Container(
+                            width: 60,
+                            height: 60,
+                            decoration: BoxDecoration(
+                              color: Colors.grey.shade200,
+                              borderRadius: BorderRadius.circular(15),
+                            ),
+                            child: Icon(Ionicons.chevron_forward_outline),
                           ),
-                        ),
-                        const Spacer(),
-                        Container(
-                          width: 60,
-                          height: 60,
-                          decoration: BoxDecoration(
-                            color: Colors.grey.shade200,
-                            borderRadius: BorderRadius.circular(15),
-                          ),
-                          child: Icon(Ionicons.chevron_forward_outline),
-                        )
-                      ],
+                        ],
+                      ),
                     ),
                   ),
-                ),
-                SizedBox(height: 20),
-                GestureDetector(
-                  onTap: () {
-                    Navigator.of(context).push(MaterialPageRoute(
-                        builder: (context) => const PasswordScreens()));
-                  },
-                  child: Container(
-                    width: double.infinity,
-                    child: Row(
-                      children: [
-                        Container(
-                          height: 60,
-                          width: 60,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: Colors.blue.shade100,
+                  SizedBox(height: 20),
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.of(context).push(MaterialPageRoute(
+                          builder: (context) => Settings_Times()));
+                    },
+                    child: Container(
+                      width: double.infinity,
+                      child: Row(
+                        children: [
+                          Container(
+                            height: 60,
+                            width: 60,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Colors.blue.shade100,
+                            ),
+                            child: const Icon(
+                              Ionicons.timer,
+                              color: Colors.blue,
+                              size: 49,
+                            ),
                           ),
-                          child: const Icon(
-                            Ionicons.cog_outline,
-                            color: Color(0xFF577DF4),
-                            size: 49,
+                          SizedBox(width: 20),
+                          Text(
+                            "ຈັດການເວລາການເຂົ້າວຽກ",
+                            style: GoogleFonts.notoSansLao(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
-                        ),
-                        SizedBox(width: 20),
-                        Text(
-                          "ປ່ຽນລະຫັດຜ່ານ",
-                          style: GoogleFonts.notoSansLao(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        const Spacer(),
-                        Container(
-                          width: 60,
-                          height: 60,
-                          decoration: BoxDecoration(
-                            color: Colors.grey.shade200,
-                            borderRadius: BorderRadius.circular(15),
-                          ),
-                          child: Icon(Ionicons.chevron_forward_outline),
-                        )
-                      ],
+                          Spacer(),
+                          Container(
+                            width: 60,
+                            height: 60,
+                            decoration: BoxDecoration(
+                              color: Colors.grey.shade200,
+                              borderRadius: BorderRadius.circular(15),
+                            ),
+                            child: Icon(Ionicons.chevron_forward_outline),
+                          )
+                        ],
+                      ),
                     ),
                   ),
-                ),
-                SizedBox(height: 20),
-                GestureDetector(
-                  onTap: () async {
-                    await FirebaseAuth.instance
-                        .signOut(); // Sign out the user (token is removed)
+                  SizedBox(height: 20),
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.of(context).push(MaterialPageRoute(
+                          builder: (context) => const NewsScreens()));
+                    },
+                    child: Container(
+                      width: double.infinity,
+                      child: Row(
+                        children: [
+                          Container(
+                            height: 60,
+                            width: 60,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Colors.blue.shade100,
+                            ),
+                            child: const Icon(
+                              Ionicons.newspaper,
+                              color: Color(0xFF577DF4),
+                              size: 49,
+                            ),
+                          ),
+                          SizedBox(width: 20),
+                          Text(
+                            "ຈັດການຂໍ້ມູນຂ່າວສານ",
+                            style: GoogleFonts.notoSansLao(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const Spacer(),
+                          Container(
+                            width: 60,
+                            height: 60,
+                            decoration: BoxDecoration(
+                              color: Colors.grey.shade200,
+                              borderRadius: BorderRadius.circular(15),
+                            ),
+                            child: Icon(Ionicons.chevron_forward_outline),
+                          )
+                        ],
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 20),
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.of(context).push(MaterialPageRoute(
+                          builder: (context) => const PasswordScreens()));
+                    },
+                    child: Container(
+                      width: double.infinity,
+                      child: Row(
+                        children: [
+                          Container(
+                            height: 60,
+                            width: 60,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Colors.blue.shade100,
+                            ),
+                            child: const Icon(
+                              Ionicons.cog_outline,
+                              color: Color(0xFF577DF4),
+                              size: 49,
+                            ),
+                          ),
+                          SizedBox(width: 20),
+                          Text(
+                            "ປ່ຽນລະຫັດຜ່ານ",
+                            style: GoogleFonts.notoSansLao(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const Spacer(),
+                          Container(
+                            width: 60,
+                            height: 60,
+                            decoration: BoxDecoration(
+                              color: Colors.grey.shade200,
+                              borderRadius: BorderRadius.circular(15),
+                            ),
+                            child: Icon(Ionicons.chevron_forward_outline),
+                          )
+                        ],
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 20),
+                  GestureDetector(
+                    onTap: () async {
+                      await FirebaseAuth.instance.signOut();
+                      await FirebaseMessaging.instance.deleteToken();
 
-                    Navigator.of(context)
-                        .push(MaterialPageRoute(builder: (context) => Login()));
-                  },
-                  child: Container(
-                    width: double.infinity,
-                    child: Row(
-                      children: [
-                        Container(
-                          height: 60,
-                          width: 60,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: Colors.blue.shade100,
+                      Navigator.of(context).push(
+                          MaterialPageRoute(builder: (context) => Login()));
+                    },
+                    child: Container(
+                      width: double.infinity,
+                      child: Row(
+                        children: [
+                          Container(
+                            height: 60,
+                            width: 60,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Colors.blue.shade100,
+                            ),
+                            child: const Icon(
+                              Ionicons.log_out_outline,
+                              color: Color(0xFF577DF4),
+                              size: 49,
+                            ),
                           ),
-                          child: const Icon(
-                            Ionicons.log_out_outline,
-                            color: Color(0xFF577DF4),
-                            size: 49,
+                          SizedBox(width: 20),
+                          Text(
+                            "ອອກຈາກລະບົບ",
+                            style: GoogleFonts.notoSansLao(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
-                        ),
-                        SizedBox(width: 20),
-                        Text(
-                          "ອອກຈາກລະບົບ",
-                          style: GoogleFonts.notoSansLao(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        const Spacer(),
-                        Container(
-                          width: 60,
-                          height: 60,
-                          decoration: BoxDecoration(
-                            color: Colors.grey.shade200,
-                            borderRadius: BorderRadius.circular(15),
-                          ),
-                          child: Icon(Ionicons.chevron_forward_outline),
-                        )
-                      ],
+                          const Spacer(),
+                          Container(
+                            width: 60,
+                            height: 60,
+                            decoration: BoxDecoration(
+                              color: Colors.grey.shade200,
+                              borderRadius: BorderRadius.circular(15),
+                            ),
+                            child: Icon(Ionicons.chevron_forward_outline),
+                          )
+                        ],
+                      ),
                     ),
-                  ),
-                )
-              ],
-            ),
-          ],
+                  )
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );

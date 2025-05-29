@@ -2,6 +2,7 @@ import 'package:admin_timesabai/service/notification/firebase_notification.dart'
 import 'package:admin_timesabai/service/notification/notificationhelper.dart';
 import 'package:admin_timesabai/views/users_views/screens/home_screens/home_screens.dart';
 import 'package:admin_timesabai/views/users_views/screens/login_screens/login.dart';
+import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
@@ -12,6 +13,22 @@ import 'package:lottie/lottie.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  AwesomeNotifications().initialize(
+  null,
+    [
+      NotificationChannel(
+        channelKey: 'key1',
+        channelName: 'Basic Notifications',
+        channelDescription: 'Notification channel for basic tests',
+        defaultColor: const Color(0xFF9D50DD),
+        ledColor: Colors.white,
+        playSound: true,
+        enableLights: true,
+        enableVibration: true,
+        importance: NotificationImportance.High,
+      )
+    ],
+  );
 
   try {
     await Firebase.initializeApp();

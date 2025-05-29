@@ -271,14 +271,14 @@ class _LoginPageState extends State<LoginPage> {
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
-              builder: (context) =>  EmployeeLevaeScreen(),
+              builder: (context) =>  const HomeScreens(),
             ),
           );
         }else{
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
-              builder: (context) =>  HomeScreens(),
+              builder: (context) =>  const HomeScreens(),
             ),
           );
         }

@@ -265,7 +265,9 @@ class _NotificationScreensState extends State<NotificationScreens> {
                       builder: (context) => Pdfview(
                           documentUrl: documentUrl,
                           leaveid: employee['leaveId'],
-                          users: employee['employeeId']),
+                          users: employee['employeeId'],
+                            name: employee['name'],
+                          ),
                     ),
                   );
 

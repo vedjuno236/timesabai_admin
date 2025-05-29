@@ -1,10 +1,11 @@
 import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
-
 import 'package:admin_timesabai/views/users_views/screens/notification/notification_screens.dart';
+import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dio/dio.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -22,8 +23,14 @@ class Pdfview extends StatefulWidget {
   final String documentUrl;
   final String? users;
   final String? leaveid;
+  final String? name;
 
-  const Pdfview({Key? key, required this.documentUrl, this.users, this.leaveid})
+  const Pdfview(
+      {Key? key,
+      required this.documentUrl,
+      this.users,
+      this.leaveid,
+      this.name})
       : super(key: key);
 
   @override
@@ -38,8 +45,13 @@ class _PdfviewState extends State<Pdfview> {
   PdfViewerController _pdfViewerController = PdfViewerController();
   final GlobalKey<SfSignaturePadState> sf = GlobalKey();
   Color currentColor = Colors.black;
-  GlobalKey<SfSignaturePadState> _signaturePadKey = GlobalKey();
-  GlobalKey _repaintBoundaryKey = GlobalKey();
+  // GlobalKey<SfSignaturePadState> _signaturePadKey = GlobalKey();
+  // final GlobalKey<SfSignaturePadState> _signaturePadKey = GlobalKey<SfSignaturePadState>();
+  // GlobalKey _repaintBoundaryKey = GlobalKey();
+  final GlobalKey<SfSignaturePadState> _signaturePadKey =
+      GlobalKey<SfSignaturePadState>();
+  final GlobalKey _repaintBoundaryKey = GlobalKey();
+
   Offset _signaturePosition =
       Offset(100, 100); // Starting position of the signature
   bool _showSignature = true;
@@ -93,6 +105,26 @@ class _PdfviewState extends State<Pdfview> {
     {'icon': Icons.perm_identity, 'text': 'Name', 'string': 'ຊື່'},
     {'icon': Icons.image, 'text': 'Image', 'string': 'ຮູບພາບ'},
   ];
+  Color _selectedColor = Colors.black;
+
+  Widget ColorPalette(
+      Color color, double size, Function(Color) onColorSelected) {
+    return ElevatedButton(
+      onPressed: () {
+        onColorSelected(color);
+      },
+      style: ElevatedButton.styleFrom(
+        shape: const CircleBorder(),
+        padding: EdgeInsets.all(size),
+        backgroundColor: color,
+        side: BorderSide(
+          color: Colors.white,
+          width: 2,
+        ),
+      ),
+      child: null,
+    );
+  }
 
   Future<void> _addSignatureToPdf() async {
     setState(() {
@@ -153,81 +185,136 @@ class _PdfviewState extends State<Pdfview> {
   }
 
   void _showSignatureDialog() {
+    Color _dialogSelectedColor = Colors.black;
+
     showDialog(
       context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          backgroundColor: Colors.white,
-          title: Container(
-            height: 40,
-            decoration: BoxDecoration(
-              border: Border.all(color: Colors.black12),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Center(
-              // This will center the text vertically and horizontally
-              child: Text(
-                'ລາຍເຊັນ',
-                style: GoogleFonts.notoSansLao(
-                    color: Colors.black,
-                    fontSize: 20,
-                    fontWeight: FontWeight.w600),
-              ),
-            ),
-          ),
-          content: Container(
-            height: 200,
-            decoration: BoxDecoration(
-              border: Border.all(color: Colors.black12),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: RepaintBoundary(
-              key: _repaintBoundaryKey,
-              child: SfSignaturePad(
-                key: _signaturePadKey,
-                backgroundColor: Colors.transparent,
-                strokeColor: Colors.black,
-                minimumStrokeWidth: 1.0,
-                maximumStrokeWidth: 4.0,
-              ),
-            ),
-          ),
-          actions: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                Expanded(child: ColorPalette(Colors.blue, 10)),
-                Expanded(child: ColorPalette(Colors.black26, 10)),
-                Expanded(child: ColorPalette(Colors.red, 10)),
-                TextButton(
-                  onPressed: () {
-                    sf.currentState?.clear();
-                  },
+      builder: (BuildContext dialogContext) {
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter dialogSetState) {
+            return AlertDialog(
+              backgroundColor: Colors.white,
+              title: Container(
+                height: 40,
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.black12),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Center(
                   child: Text(
-                    'ລືບ',
-                    style: GoogleFonts.notoSansLao(),
+                    'ລາຍເຊັນ',
+                    style: GoogleFonts.notoSansLao(
+                      color: Colors.black,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
-                ElevatedButton(
-                  onPressed: isLoadingPop
-                      ? null
-                      : () async {
-                          await _addSignatureToPdf();
-                          Navigator.pop(context);
+              ),
+              content: Container(
+                height: 200,
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.black12),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: RepaintBoundary(
+                  key: _repaintBoundaryKey,
+                  child: SfSignaturePad(
+                    key: _signaturePadKey,
+                    backgroundColor: Colors.transparent,
+                    strokeColor: _dialogSelectedColor, // ใช้สีจาก dialog
+                    minimumStrokeWidth: 1.0,
+                    maximumStrokeWidth: 4.0,
+                  ),
+                ),
+              ),
+              actions: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: ColorPalette(
+                        Colors.blue,
+                        10,
+                        (color) {
+                          dialogSetState(() {
+                            _dialogSelectedColor = color; // อัปเดตสีใน dialog
+                          });
                         },
-                  child: isLoadingPop
-                      ? const CircularProgressIndicator(
-                          valueColor:
-                              AlwaysStoppedAnimation<Color>(Colors.white),
-                        )
-                      : Text(
-                          "ບັນທືກ",
-                          style: GoogleFonts.notoSansLao(),
+                      ),
+                    ),
+                    Expanded(
+                      child: ColorPalette(
+                        Colors.black26,
+                        10,
+                        (color) {
+                          dialogSetState(() {
+                            _dialogSelectedColor = color;
+                          });
+                        },
+                      ),
+                    ),
+                    Expanded(
+                      child: ColorPalette(
+                        Colors.red,
+                        10,
+                        (color) {
+                          dialogSetState(() {
+                            _dialogSelectedColor = color;
+                          });
+                        },
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        print("Clear button pressed");
+                        _signaturePadKey.currentState?.clear();
+                        dialogSetState(() {});
+                      },
+                      child: Text(
+                        'ລືບ',
+                        style: GoogleFonts.notoSansLao(),
+                      ),
+                    ),
+                    ElevatedButton(
+                      onPressed: isLoadingPop
+                          ? null
+                          : () async {
+                              setState(() {
+                                isLoadingPop = true;
+                              });
+                              await _addSignatureToPdf();
+                              setState(() {
+                                isLoadingPop = false;
+                              });
+                              Navigator.pop(dialogContext);
+                            },
+                      child: isLoadingPop
+                          ? const CircularProgressIndicator(
+                              valueColor:
+                                  AlwaysStoppedAnimation<Color>(Colors.white),
+                            )
+                          : Text(
+                              "ບັນທືກ",
+                              style: GoogleFonts.notoSansLao(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.white),
+                            ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30),
+                          side: BorderSide(color: Colors.blue),
                         ),
+                      ),
+                    ),
+                  ],
                 ),
               ],
-            ),
-          ],
+            );
+          },
         );
       },
     );
@@ -529,7 +616,7 @@ class _PdfviewState extends State<Pdfview> {
 
   @override
   Widget build(BuildContext context) {
-    final screenSize = MediaQuery.of(context).size; // Get screen size
+    final screenSize = MediaQuery.of(context).size;
 
     return Scaffold(
       appBar: AppBar(
@@ -541,15 +628,30 @@ class _PdfviewState extends State<Pdfview> {
         ),
         actions: [
           IconButton(
-            onPressed: () {
-              _savePdf().whenComplete(() {
+            onPressed: () async {
+              try {
+                DocumentSnapshot documentSnapshot = await FirebaseFirestore
+                    .instance
+                    .collection('Users')
+                    .doc(FirebaseAuth.instance.currentUser!.uid)
+                    .get();
+
+                await _savePdf();
                 Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (context) => NotificationScreens(),
                   ),
                 );
-              });
+
+                if (!documentSnapshot.exists ||
+                    documentSnapshot.get('rool') != 'ຄະນະບໍດີ') {
+                  notify();
+                }
+                Navigator.pop(context);
+              } catch (e) {
+                print('Error: $e');
+              }
             },
             icon: CircleAvatar(
                 backgroundColor: Colors.white,
@@ -738,19 +840,24 @@ class _PdfviewState extends State<Pdfview> {
     );
   }
 
-  Widget ColorPalette(Color color, double size) {
-    return ElevatedButton(
-      onPressed: () {
-        setState(() {
-          currentColor = color;
-        });
-      },
-      style: ElevatedButton.styleFrom(
-        shape: const CircleBorder(),
-        padding: EdgeInsets.all(20),
-        backgroundColor: color,
-      ),
-      child: null,
-    );
+  Future<void> notify() async {
+    try {
+      String timezone =
+          await AwesomeNotifications().getLocalTimeZoneIdentifier();
+      await AwesomeNotifications().createNotification(
+        content: NotificationContent(
+          id: 1,
+          channelKey: 'key1',
+          title: widget.name ?? 'ພະນັກງານ',
+          body: 'ຮຽນຄະນະບໍ່ດີ ຂໍລາຍເຊັນ ໃບລາພັກຂອງທ່ານ ${widget.name} ',
+          bigPicture:
+              'https://img.freepik.com/free-vector/document-vector-colorful-design_341269-1262.jpg?semt=ais_hybrid&w=740',
+          notificationLayout: NotificationLayout.BigPicture,
+          largeIcon: 'assets/images/back.jpg',
+        ),
+      );
+    } catch (e) {
+      print("Notification error: $e");
+    }
   }
 }

@@ -6,8 +6,10 @@ import 'package:admin_timesabai/views/users_views/screens/settings/settings_stys
 import 'package:admin_timesabai/views/users_views/screens/type_leave/type_leave.dart';
 import 'package:admin_timesabai/views/users_views/screens/user_screens/user_screens.dart';
 import 'package:admin_timesabai/views/widget/date_month_year/shared/month_picker.dart';
+import 'package:admin_timesabai/views/widget/loading_platform/loading.dart';
 import 'package:badges/badges.dart' as badges;
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -28,7 +30,6 @@ import '../record_screens/employee_records_serceen.dart';
 
 class HomeScreens extends StatefulWidget {
   const HomeScreens({super.key});
-
   @override
   State<HomeScreens> createState() => _HomeScreensState();
 }
@@ -50,11 +51,14 @@ class _HomeScreensState extends State<HomeScreens> {
     Folder(
         folderName: 'ຈັດການຂໍ້ມູນຜູ້ໃຊ້ລະບົບ', storage: '0', colors: '#3a86ff'),
   ];
+  List<Folder> filteredFolders = [];
+  String userRole = '';
   String leaveMessage = 'ກໍາລັງໂຫລດຂໍ້ມູນ...';
   String recordlateMessage = 'ກໍາລັງໂຫລດຂໍ້ມູນ...';
   @override
   void initState() {
     super.initState();
+    fetchUserRole();
     fetchEmployeeCount();
     fetchDepartmentCount();
     fetchBranchCount();
@@ -74,6 +78,64 @@ class _HomeScreensState extends State<HomeScreens> {
     countMonthRecords(_selectedMonth!);
     fetchLeaveNames();
     fetchRecordLateNames();
+  }
+
+  bool isLoading = true;
+  void fetchUserRole() async {
+    try {
+      if (FirebaseAuth.instance.currentUser == null) {
+        setState(() {
+          isLoading = false;
+          filteredFolders = folders;
+        });
+        return;
+      }
+
+      DocumentSnapshot documentSnapshot = await FirebaseFirestore.instance
+          .collection('Users')
+          .doc(FirebaseAuth.instance.currentUser!.uid)
+          .get();
+
+      if (documentSnapshot.exists) {
+        if (documentSnapshot.data() != null &&
+            (documentSnapshot.data() as Map<String, dynamic>)
+                .containsKey('rool')) {
+          setState(() {
+            userRole = documentSnapshot.get('rool') ?? '';
+            if (userRole == 'ຄະນະບໍດີ') {
+              filteredFolders = folders.where((folder) {
+                return folder.folderName == 'ຂໍ້ມູນລາພັກ' ||
+                    folder.folderName == 'ຈັດການຂໍ້ມູນຜູ້ໃຊ້ລະບົບ' ||
+                    folder.folderName == 'ຂໍ້ມູນມາປະຈໍາການ';
+              }).toList();
+            } else {
+              filteredFolders = folders;
+            }
+            isLoading = false;
+          });
+        } else {
+       
+          setState(() {
+            userRole = '';
+            filteredFolders = folders;
+            isLoading = false;
+          });
+          print('Field "role" does not exist in the document');
+        }
+      } else {
+        setState(() {
+          isLoading = false;
+          filteredFolders = folders;
+        });
+        print('Document does not exist in the database');
+      }
+    } catch (e) {
+      setState(() {
+        isLoading = false;
+        filteredFolders = folders;
+      });
+      print('Error fetching user role: $e');
+    }
   }
 
   void fetchLeaveNames() async {
@@ -722,22 +784,43 @@ class _HomeScreensState extends State<HomeScreens> {
                           ],
                         ),
                         const SizedBox(width: 5),
-                        Text(
-                          "Hi ADMIN!",
-                          style: GoogleFonts.notoSansLao(
-                              color: Colors.white,
-                              fontSize: 20,
-                              fontWeight: FontWeight.w600),
+                        FutureBuilder(
+                          future: FirebaseFirestore.instance
+                              .collection('Users')
+                              .doc(FirebaseAuth.instance.currentUser!.uid)
+                              .get(),
+                          builder: (BuildContext context,
+                              AsyncSnapshot<DocumentSnapshot> snapshot) {
+                            if (snapshot.connectionState ==
+                                ConnectionState.waiting) {
+                              return Center(child: LoadingPlatformV2());
+                            }
+
+                            if (snapshot.hasError) {
+                              return Center(child: Text('ເກີດຂໍ້ຜິດພາດ'));
+                            }
+
+                            if (!snapshot.hasData || !snapshot.data!.exists) {
+                              return Center(child: Text('ບໍ່ມີຂໍ້ມູນ'));
+                            }
+
+                            final data =
+                                snapshot.data!.data() as Map<String, dynamic>;
+
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Hi ${data['rool'] ?? ''}',
+                                  style: GoogleFonts.notoSansLao(
+                                      color: Colors.white,
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.w400),
+                                ),
+                              ],
+                            );
+                          },
                         ),
-                        // const Spacer(),
-                        // IconButton(
-                        //   color: Colors.white,
-                        //   onPressed: () {
-                        //     Navigator.of(context).push(MaterialPageRoute(
-                        //         builder: (context) => const SettingsStystem()));
-                        //   },
-                        //   icon: const FaIcon(FontAwesomeIcons.sliders),
-                        // ),
                         const Spacer(),
                         Expanded(
                           child: GestureDetector(
@@ -1264,108 +1347,197 @@ class _HomeScreensState extends State<HomeScreens> {
                       fontSize: 20, fontWeight: FontWeight.bold),
                 ),
               ),
-              GridView.count(
-                crossAxisCount: 2,
-                crossAxisSpacing: 5,
-                mainAxisSpacing: 5,
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                childAspectRatio: 1.2,
-                padding: const EdgeInsets.all(10),
-                children: [
-                  for (int i = 0; i < folders.length; i++)
-                    InkWell(
-                      onTap: () {
-                        if (i == 0) {
-                          Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) => EmployeeScreens()));
-                        } else if (i == 1) {
-                          Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) => DepartmentScreens()));
-                        } else if (i == 2) {
-                          Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) => BranchScreens()));
-                        } else if (i == 3) {
-                          Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) => PositionScreens()));
-                        } else if (i == 4) {
-                          Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) => EmployeeLevaeScreen()));
-                        } else if (i == 5) {
-                          Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) => EmployeeRecordsSerceen()));
-                        } else if (i == 6) {
-                          Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) => AgenciesScreens()));
-                        } else if (i == 7) {
-                          Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) => EthnicityScreens()));
-                        } else if (i == 8) {
-                          Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) => ProvinceScreens()));
-                        } else if (i == 9) {
-                          Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) => DistrictsScreens()));
-                        } else if (i == 10) {
-                          Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) => TypeLeaveScreens()));
-                        } else if (i == 11) {
-                          Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) => UserScreens()));
-                        }
-                      },
-                      child: Stack(
-                        children: [
-                          Container(
-                            margin: const EdgeInsets.all(5),
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              color: HexColor('${folders[i].colors}')
-                                  .withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                Align(
-                                  alignment: Alignment.centerRight,
-                                  child: Text(
-                                    "ຈໍານວນ ${folders[i].storage}",
-                                    style: GoogleFonts.notoSansLao(
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.bold),
-                                  ),
+              isLoading
+                  ? Center(
+                      child: LoadingPlatformV2(),
+                    )
+                  : filteredFolders.isEmpty
+                      ? Text('Nodata')
+                      : GridView.count(
+                          crossAxisCount: 2,
+                          crossAxisSpacing: 5,
+                          mainAxisSpacing: 5,
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          childAspectRatio: 1.2,
+                          padding: const EdgeInsets.all(10),
+                          children: [
+                            for (int i = 0; i < filteredFolders.length; i++)
+                              InkWell(
+                                onTap: () {
+                                  // if (i == 0) {
+                                  //   Navigator.of(context).push(MaterialPageRoute(
+                                  //       builder: (context) => EmployeeScreens()));
+                                  // } else if (i == 1) {
+                                  //   Navigator.of(context).push(MaterialPageRoute(
+                                  //       builder: (context) => DepartmentScreens()));
+                                  // } else if (i == 2) {
+                                  //   Navigator.of(context).push(MaterialPageRoute(
+                                  //       builder: (context) => BranchScreens()));
+                                  // } else if (i == 3) {
+                                  //   Navigator.of(context).push(MaterialPageRoute(
+                                  //       builder: (context) => const PositionScreens()));
+                                  // } else if (i == 4) {
+                                  //   Navigator.of(context).push(MaterialPageRoute(
+                                  //       builder: (context) => const EmployeeLevaeScreen()));
+                                  // } else if (i == 5) {
+                                  //   Navigator.of(context).push(MaterialPageRoute(
+                                  //       builder: (context) => EmployeeRecordsSerceen()));
+                                  // } else if (i == 6) {
+                                  //   Navigator.of(context).push(MaterialPageRoute(
+                                  //       builder: (context) => AgenciesScreens()));
+                                  // } else if (i == 7) {
+                                  //   Navigator.of(context).push(MaterialPageRoute(
+                                  //       builder: (context) => EthnicityScreens()));
+                                  // } else if (i == 8) {
+                                  //   Navigator.of(context).push(MaterialPageRoute(
+                                  //       builder: (context) => ProvinceScreens()));
+                                  // } else if (i == 9) {
+                                  //   Navigator.of(context).push(MaterialPageRoute(
+                                  //       builder: (context) => DistrictsScreens()));
+                                  // } else if (i == 10) {
+                                  //   Navigator.of(context).push(MaterialPageRoute(
+                                  //       builder: (context) => TypeLeaveScreens()));
+                                  // } else if (i == 11) {
+                                  //   Navigator.of(context).push(MaterialPageRoute(
+                                  //       builder: (context) => UserScreens()));
+                                  // }
+
+                                  switch (filteredFolders[i].folderName) {
+                                    case 'ຈັດການຂໍ້ມູນພະນັກງານ':
+                                      Navigator.of(context).push(
+                                          MaterialPageRoute(
+                                              builder: (context) =>
+                                                  EmployeeScreens()));
+                                      break;
+                                    case 'ຈັດການຂໍ້ມູນພາກວິຊາ':
+                                      Navigator.of(context).push(
+                                          MaterialPageRoute(
+                                              builder: (context) =>
+                                                  DepartmentScreens()));
+                                      break;
+                                    case 'ຈັດການຂໍ້ມູນສາຂາ':
+                                      Navigator.of(context).push(
+                                          MaterialPageRoute(
+                                              builder: (context) =>
+                                                  BranchScreens()));
+                                      break;
+                                    case 'ຈັດການຂໍ້ມູນຕໍາແໜ່ງ':
+                                      Navigator.of(context).push(
+                                          MaterialPageRoute(
+                                              builder: (context) =>
+                                                  const PositionScreens()));
+                                      break;
+                                    case 'ຂໍ້ມູນລາພັກ':
+                                      Navigator.of(context).push(
+                                          MaterialPageRoute(
+                                              builder: (context) =>
+                                                  const EmployeeLevaeScreen()));
+                                      break;
+                                    case 'ຂໍ້ມູນມາປະຈໍາການ':
+                                      Navigator.of(context).push(
+                                          MaterialPageRoute(
+                                              builder: (context) =>
+                                                  EmployeeRecordsSerceen()));
+                                      break;
+                                    case 'ຈັດການຂໍ້ມູນພະແນກ':
+                                      Navigator.of(context).push(
+                                          MaterialPageRoute(
+                                              builder: (context) =>
+                                                  AgenciesScreens()));
+                                      break;
+                                    case 'ຈັດການຂໍ້ມູນຊົນເຜົ່າ':
+                                      Navigator.of(context).push(
+                                          MaterialPageRoute(
+                                              builder: (context) =>
+                                                  EthnicityScreens()));
+                                      break;
+                                    case 'ຈັດການຂໍ້ມູນແຂວງ':
+                                      Navigator.of(context).push(
+                                          MaterialPageRoute(
+                                              builder: (context) =>
+                                                  ProvinceScreens()));
+                                      break;
+                                    case 'ຈັດການຂໍ້ມູນເມືອງ':
+                                      Navigator.of(context).push(
+                                          MaterialPageRoute(
+                                              builder: (context) =>
+                                                  DistrictsScreens()));
+                                      break;
+                                    case 'ຈັດການຂໍ້ມູນປະເພດລາພັກ':
+                                      Navigator.of(context).push(
+                                          MaterialPageRoute(
+                                              builder: (context) =>
+                                                  TypeLeaveScreens()));
+                                      break;
+                                    case 'ຈັດການຂໍ້ມູນຜູ້ໃຊ້ລະບົບ':
+                                      Navigator.of(context).push(
+                                          MaterialPageRoute(
+                                              builder: (context) =>
+                                                  UserScreens()));
+                                      break;
+                                    default:
+                                      print(
+                                          'Unknown folder: ${filteredFolders[i].folderName}');
+                                  }
+                                },
+                                child: Stack(
+                                  children: [
+                                    Container(
+                                      margin: const EdgeInsets.all(5),
+                                      padding: const EdgeInsets.all(16),
+                                      decoration: BoxDecoration(
+                                        color: HexColor('${folders[i].colors}')
+                                            .withOpacity(0.1),
+                                        borderRadius: BorderRadius.circular(16),
+                                      ),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.center,
+                                        children: [
+                                          Align(
+                                            alignment: Alignment.centerRight,
+                                            child: Text(
+                                              "ຈໍານວນ ${filteredFolders[i].storage}",
+                                              style: GoogleFonts.notoSansLao(
+                                                  fontSize: 13,
+                                                  fontWeight: FontWeight.bold),
+                                            ),
+                                          ),
+                                          const SizedBox(height: 32),
+                                          Text(
+                                            "${filteredFolders[i].folderName}",
+                                            style: GoogleFonts.notoSansLao(
+                                                fontSize: 15,
+                                                fontWeight: FontWeight.w600),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    Container(
+                                      padding: const EdgeInsets.all(18),
+                                      decoration: BoxDecoration(
+                                        color: HexColor(
+                                            '${filteredFolders[i].colors}'),
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: const Icon(
+                                        Icons.folder,
+                                        color: Colors.white,
+                                        size: 20,
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                                const SizedBox(height: 32),
-                                Text(
-                                  "${folders[i].folderName}",
-                                  style: GoogleFonts.notoSansLao(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.w600),
-                                ),
-                              ],
-                            ),
+                              ),
+                          ],
+                        )
+                          .animate()
+                          .fadeIn(duration: 400.ms, delay: 400.ms)
+                          .move(
+                            begin: const Offset(-16, 0),
+                            curve: Curves.easeOutQuad,
                           ),
-                          Container(
-                            padding: const EdgeInsets.all(18),
-                            decoration: BoxDecoration(
-                              color: HexColor('${folders[i].colors}'),
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(
-                              Icons.folder,
-                              color: Colors.white,
-                              size: 20,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                ],
-              ).animate().fadeIn(duration: 400.ms, delay: 400.ms).move(
-                    begin: const Offset(-16, 0),
-                    curve: Curves.easeOutQuad,
-                  ),
             ],
           ),
         ),

@@ -5,21 +5,15 @@ import 'package:admin_timesabai/views/widget/loading_platform/loading.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:ionicons/ionicons.dart';
 import 'package:status_alert/status_alert.dart';
-
 import '../../../../components/backGroun.dart';
 import '../home_screens/home_screens.dart';
-
 class Login extends StatefulWidget {
   const Login({super.key});
-
   @override
   State<Login> createState() => _LoginState();
 }
-
 class _LoginState extends State<Login> {
   bool _isObscure3 = true;
   bool visible = false;
@@ -211,8 +205,7 @@ class _LoginState extends State<Login> {
                                 setState(() {
                                   isLoading = true;
                                 });
-                                await Future.delayed(
-                                    const Duration(seconds: 2));
+                           
                                 signIn(context, emailController.text,
                                     passwordController.text);
                                 setState(() {
@@ -227,10 +220,7 @@ class _LoginState extends State<Login> {
                           ),
                         ),
                         child: isLoading
-                            // ? const SpinKitCircle(
-                            //     color: Colors.white,
-                            //     size: 30.0,
-                            //   )
+                     
                             ? Text(
                                 'ກໍາລັງເຂົ້າສູ່ລະບົບ.....',
                                 style: GoogleFonts.notoSansLao(
@@ -299,7 +289,7 @@ class _LoginState extends State<Login> {
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
-              builder: (context) => EmployeeLevaeScreen(),
+              builder: (context) => HomeScreens(),
             ),
           );
         } else {
@@ -346,7 +336,7 @@ class _LoginState extends State<Login> {
         );
         StatusAlert.show(
           context,
-          duration: Duration(milliseconds: 1000),
+    
           subtitle: 'ເຂົ້າສູ່ລະບົບສໍາເລັດ.',
           subtitleOptions: StatusAlertTextConfiguration(
             style: GoogleFonts.notoSansLao(
@@ -376,7 +366,7 @@ class _LoginState extends State<Login> {
 
         StatusAlert.show(
           context,
-          duration: Duration(seconds: 2),
+     
           subtitle: 'ການເຂົ້າສູ່ລະບົບລົ້ມຫຼ້ຽວ',
           subtitleOptions: StatusAlertTextConfiguration(
             style: GoogleFonts.notoSansLao(
