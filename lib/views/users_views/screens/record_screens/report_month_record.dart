@@ -129,6 +129,12 @@ class _ReportEmployeeState extends State<ReportMonthRecord> {
                       data['clockOutPM'].trim().isEmpty))
               ? '------'
               : data['clockOutPM'];
+          final statusOutDoor = (data['status_out_door'] == null ||
+                  data['status_out_door'] == 'ບໍ່ມີຂໍ້ມູນ' ||
+                  (data['status_out_door'] is String &&
+                      data['status_out_door'].trim().isEmpty))
+              ? '------'
+              : data['status_out_door'];
 
           String status = data['status'] ?? 'ບໍ່ມີຂໍ້ມູນ';
           if (isOnLeave) {
@@ -161,6 +167,7 @@ class _ReportEmployeeState extends State<ReportMonthRecord> {
               'clockInPM': clockInPM,
               'clockOutPM': clockOutPM,
               'status': status,
+              'status_out_door': statusOutDoor
             });
           }
         } else {
@@ -352,6 +359,14 @@ class _ReportEmployeeState extends State<ReportMonthRecord> {
                       textAlign: pw.TextAlign.center,
                     ),
                   ),
+                  pw.Padding(
+                    padding: const pw.EdgeInsets.all(8),
+                    child: pw.Text(
+                      'ອອກວຽກນອກ',
+                      style: pw.TextStyle(font: font, fontSize: 10),
+                      textAlign: pw.TextAlign.center,
+                    ),
+                  ),
                 ],
               ),
               // Data rows
@@ -428,6 +443,17 @@ class _ReportEmployeeState extends State<ReportMonthRecord> {
                                                   : PdfColors.black,
                         ),
                         textAlign: pw.TextAlign.left,
+                      ),
+                    ),
+                    pw.Padding(
+                      padding: const pw.EdgeInsets.all(8),
+                      child: pw.Text(
+                        e['status_out_door'] != null &&
+                                e['status_out_door'] != 'null'
+                            ? e['status_out_door'].toString()
+                            : '------',
+                        style: pw.TextStyle(font: font, fontSize: 10),
+                        textAlign: pw.TextAlign.center,
                       ),
                     ),
                   ],

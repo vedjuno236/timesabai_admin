@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:intl/intl.dart';
@@ -17,8 +18,10 @@ class ReportDayLeave extends StatefulWidget {
       {super.key, required this.searchName, required this.Day});
 
   @override
+  
   State<ReportDayLeave> createState() => _ReportEmployeeState();
 }
+
 
 class _ReportEmployeeState extends State<ReportDayLeave> {
   final formattedDateTime = DateFormat.yMMMMEEEEd().format(DateTime.now());
@@ -31,80 +34,99 @@ class _ReportEmployeeState extends State<ReportDayLeave> {
     );
   }
 
-Future<Uint8List> generateDocument(PdfPageFormat format) async {
-  final doc = pw.Document(pageMode: PdfPageMode.outlines);
+  Future<Uint8List> generateDocument(PdfPageFormat format) async {
+    final doc = pw.Document(pageMode: PdfPageMode.outlines);
 
-  // Load custom font for the PDF
-  final font1 = pw.Font.ttf(await rootBundle.load('assets/fonts/BoonHome-400.ttf'));
+    // Load custom font for the PDF
+    final font1 =
+        pw.Font.ttf(await rootBundle.load('assets/fonts/BoonHome-400.ttf'));
 
-  // Fetch employees from Firestore
-  final QuerySnapshot employeeSnapshot =
-      await FirebaseFirestore.instance.collection('Employee').get();
+    // Fetch employees from Firestore
+    final QuerySnapshot employeeSnapshot =
+        await FirebaseFirestore.instance.collection('Employee').get();
 
-  List<Map<String, dynamic>> employeeData = [];
+    List<Map<String, dynamic>> employeeData = [];
+    final targetDate = widget.Day ?? DateTime.now();
+    final formattedTargetDate = DateFormat.MMMMEEEEd().format(targetDate);
 
-  // Loop through each employee document
-  for (var employeeDoc in employeeSnapshot.docs) {
-    final employeeDataMap = employeeDoc.data() as Map<String, dynamic>;
+    // Loop through each employee document
+    for (var employeeDoc in employeeSnapshot.docs) {
+      final employeeDataMap = employeeDoc.data() as Map<String, dynamic>;
 
-    // Fetch employee name
-    final employeeName = employeeDataMap['name'] ?? 'ບໍມີຂໍໍມູນ';
+      // Fetch employee name
+      final employeeName = employeeDataMap['name'] ?? 'ບໍມີຂໍໍມູນ';
 
-    final recordSnapshot =
-        await employeeDoc.reference.collection('Leave').get();
+      final leaveSnapshot =
+          await employeeDoc.reference.collection('Leave').get();
+      for (var leaveDoc in leaveSnapshot.docs) {
+        final leaveData = leaveDoc.data() as Map<String, dynamic>;
+        final leaveStart = (leaveData['fromDate'] as Timestamp?)?.toDate();
+        final leaveEnd = (leaveData['toDate'] as Timestamp?)?.toDate();
 
-    for (var recordDoc in recordSnapshot.docs) {
-      final recordData = recordDoc.data() as Map<String, dynamic>;
-
-      final leaveType = recordData['leaveType'] ?? 'ບໍມີຂໍໍມູນ';
-      final daySummary = recordData['daySummary'] ?? 'ບໍມີຂໍໍມູນ';
-      final status = recordData['status'] ?? 'ບໍມີຂໍໍມູນ';
-      final fromDate = recordData['fromDate'];
-      final toDate = recordData['toDate'];
-      final doc = recordData['doc'] ?? 'ບໍມີຂໍໍມູນ';
-      final date = recordData['date'];
-
-      bool matchesName = true;
-      if (widget.searchName.isNotEmpty &&
-          !employeeName.toLowerCase().contains(widget.searchName.toLowerCase())) {
-        matchesName = false;
+        if (leaveStart != null && leaveEnd != null) {
+          if (targetDate.isAfter(leaveStart.subtract(Duration(days: 0))) &&
+              targetDate.isBefore(leaveEnd.add(Duration(days: 0)))) {
+            break;
+          }
+        }
       }
+      for (var recordDoc in leaveSnapshot.docs) {
+        final recordData = recordDoc.data() as Map<String, dynamic>;
 
-      if (matchesName && widget.Day != null) {
-        if (fromDate is Timestamp && toDate is Timestamp) {
-          DateTime fromDateTime = fromDate.toDate();
-          DateTime toDateTime = toDate.toDate();
-          DateTime selectedDay =
-              DateTime(widget.Day!.year, widget.Day!.month, widget.Day!.day);
+        final leaveType = recordData['leaveType'] ?? 'ບໍມີຂໍໍມູນ';
+        final daySummary = recordData['daySummary'] ?? 'ບໍມີຂໍໍມູນ';
+        final status = recordData['status'] ?? 'ບໍມີຂໍໍມູນ';
+        final fromDate = recordData['fromDate'];
+        final toDate = recordData['toDate'];
+        final doc = recordData['doc'] ?? 'ບໍມີຂໍໍມູນ';
+        final date = recordData['date'];
 
-       
-          bool isInRange = (selectedDay.isAtSameMomentAs(fromDateTime) ||
-                  selectedDay.isAfter(fromDateTime)) &&
-              (selectedDay.isAtSameMomentAs(toDateTime) ||
-                  selectedDay.isBefore(toDateTime));
+        bool matchesName = true;
+        if (widget.searchName.isNotEmpty &&
+            !employeeName
+                .toLowerCase()
+                .contains(widget.searchName.toLowerCase())) {
+          matchesName = false;
+        }
 
-          if (isInRange) {
-            String fromDateString = DateFormat('EEEE d MMMM yyyy', 'lo').format(fromDateTime);
-            String toDateString = DateFormat('EEEE d MMMM yyyy', 'lo').format(toDateTime);
-            String dateString = date is Timestamp
-                ? DateFormat('EEEE d MMMM yyyy', 'lo').format(date.toDate())
-                : 'ບໍມີຂໍໍມູນ';
+        if (matchesName && widget.Day != null) {
+          if (fromDate is Timestamp && toDate is Timestamp) {
+            DateTime fromDateTime = fromDate.toDate();
+            DateTime toDateTime = toDate.toDate();
+            DateTime selectedDay =
+                DateTime(widget.Day!.year, widget.Day!.month, widget.Day!.day);
 
-            employeeData.add({
-              'name': employeeName,
-              'date': dateString,
-              'leaveType': leaveType,
-              'daySummary': daySummary,
-              'status': status,
-              'fromDate': fromDateString,
-              'toDate': toDateString,
-              'doc': doc,
-            });
+            // bool isInRange = (selectedDay.isAtSameMomentAs(fromDateTime) ||
+            //         selectedDay.isAfter(fromDateTime)) &&
+            //     (selectedDay.isAtSameMomentAs(toDateTime) ||
+            //         selectedDay.isBefore(toDateTime));
+            bool isInRange = selectedDay.isAfter(fromDateTime.subtract(Duration(days: 1))) &&
+    selectedDay.isBefore(toDateTime.add(Duration(days: 1)));
+
+            if (isInRange) {
+              String fromDateString =
+                  DateFormat('EEEE d MMMM yyyy', 'lo').format(fromDateTime);
+              String toDateString =
+                  DateFormat('EEEE d MMMM yyyy', 'lo').format(toDateTime);
+              String dateString = date is Timestamp
+                  ? DateFormat('EEEE d MMMM yyyy', 'lo').format(date.toDate())
+                  : 'ບໍມີຂໍໍມູນ';
+
+              employeeData.add({
+                'name': employeeName,
+                'date': dateString,
+                'leaveType': leaveType,
+                'daySummary': daySummary,
+                'status': status,
+                'fromDate': fromDateString,
+                'toDate': toDateString,
+                'doc': doc,
+              });
+            }
           }
         }
       }
     }
-  }
 
     Uint8List logoData =
         (await rootBundle.load('assets/icons/images.png')).buffer.asUint8List();

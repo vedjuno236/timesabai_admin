@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class CustomTextFieldDesign extends StatelessWidget {
   final String hintText;
@@ -67,10 +68,7 @@ class CustomTextFieldDesign extends StatelessWidget {
               )
             : null,
         hintText: hintText,
-        hintStyle: Theme.of(context)
-            .textTheme
-            .bodySmall!
-            .copyWith(color: Colors.grey, fontSize: 15),
+        hintStyle: GoogleFonts.notoSansLao(),
         border: border ??
             const OutlineInputBorder(
               borderRadius: BorderRadius.all(Radius.circular(10)),
@@ -105,7 +103,7 @@ class CustomTextFieldDesign extends StatelessWidget {
         errorStyle: Theme.of(context).textTheme.bodyMedium!.copyWith(
               color: Colors.grey,
             ),
-        fillColor: Theme.of(context).canvasColor,
+        fillColor: Colors.white,
         filled: true,
       ),
     );

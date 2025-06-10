@@ -97,12 +97,12 @@ class _EmployeeLevaeScreenState extends State<EmployeeLevaeScreen> {
     bool isDateFilter = _isDateFilterActive;
 
     if (isDateFilter) {
-      // Use selected date for filtering
+    
       fromDate =
           DateTime(_selectedDate.year, _selectedDate.month, _selectedDate.day);
       toDate = fromDate;
     } else {
-      // Use selected month for filtering
+  
       fromDate = DateTime(_selectedMonth.year, _selectedMonth.month, 1);
       toDate = DateTime(_selectedMonth.year, _selectedMonth.month + 1, 1)
           .subtract(const Duration(days: 1));

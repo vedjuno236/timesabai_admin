@@ -5,6 +5,7 @@ import 'package:admin_timesabai/views/users_views/screens/provinces_screens/prov
 import 'package:admin_timesabai/views/users_views/screens/settings/settings_stystem.dart';
 import 'package:admin_timesabai/views/users_views/screens/type_leave/type_leave.dart';
 import 'package:admin_timesabai/views/users_views/screens/user_screens/user_screens.dart';
+
 import 'package:admin_timesabai/views/widget/date_month_year/shared/month_picker.dart';
 import 'package:admin_timesabai/views/widget/loading_platform/loading.dart';
 import 'package:badges/badges.dart' as badges;
@@ -58,6 +59,8 @@ class _HomeScreensState extends State<HomeScreens> {
   @override
   void initState() {
     super.initState();
+
+ 
     fetchUserRole();
     fetchEmployeeCount();
     fetchDepartmentCount();
@@ -70,6 +73,7 @@ class _HomeScreensState extends State<HomeScreens> {
     fetchProvincesCount();
     fetchDistrictsCount();
     countTodayRecordDay();
+    countTodayLateRecords();
     countTodayLeaveDay();
     countrecordMonthCountLate(_selectedMonth!);
     countMonthLeaves(_selectedMonth!);
@@ -549,7 +553,7 @@ class _HomeScreensState extends State<HomeScreens> {
   }
 
   int recordMonthCountLate = 0;
-
+ int lateCount = 0;
   Future<void> countrecordMonthCountLate(DateTime selectedMonth) async {
     try {
       DateTime startOfMonth =
@@ -608,8 +612,8 @@ class _HomeScreensState extends State<HomeScreens> {
     }
   }
 
-  int lateCount = 0;
-  void countTodayLateRecords() async {
+int recordCountLeateDay=0;
+  Future<void> countTodayLateRecords() async {
     try {
       DateTime today = DateTime.now();
       DateTime startOfToday = DateTime(today.year, today.month, today.day);
@@ -621,19 +625,23 @@ class _HomeScreensState extends State<HomeScreens> {
           .where('date',
               isGreaterThanOrEqualTo: Timestamp.fromDate(startOfToday))
           .where('date', isLessThanOrEqualTo: Timestamp.fromDate(endOfToday))
-          .where('status', isEqualTo: 'ມາວຽກຊ້າ')
+          // .where('status', isEqualTo: 'ມາວຽກຊ້າ')
           .get();
-
+      for (var doc in snapshot.docs) {
+        final status = doc['status']?.toString().trim();
+        if (status == 'ມາວຽກຊ້າ') {
+          recordCountLeateDay++;
+        } else {
+          print("พบ status ที่ไม่ตรง: '$status'");
+        }
+      }
       setState(() {
-        lateCount = snapshot.size;
-      });
+        recordCountLeateDay = recordCountLeateDay;
 
-      print('Late records today: ${snapshot.size}');
+        logger.d(recordCountLeateDay);
+      });
     } catch (e) {
       print("Error fetching late records count: $e");
-      setState(() {
-        lateCount = 0;
-      });
     }
   }
 
@@ -728,7 +736,7 @@ class _HomeScreensState extends State<HomeScreens> {
   List<ChartData> getChartData() {
     return [
       ChartData('ມາວຽກ', recordCount.toDouble(), Colors.blueAccent),
-      ChartData('ມາຊ້າ', lateCount.toDouble(), Colors.orange),
+      ChartData('ມາຊ້າ', recordCountLeateDay.toDouble(), Colors.orange),
       ChartData('ລາພັກ', leaveCount.toDouble(), Colors.cyan),
     ];
   }
@@ -993,7 +1001,7 @@ class _HomeScreensState extends State<HomeScreens> {
                       height: 5,
                     ),
                     Text(
-                      'ມາວຽກຊ້າວັນນີ້: $lateCount',
+                      'ມາວຽກຊ້າວັນນີ້: $recordCountLeateDay',
                       style: GoogleFonts.notoSansLao(
                           fontSize: 15, color: Colors.deepOrange),
                     ),

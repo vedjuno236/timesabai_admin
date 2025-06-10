@@ -52,8 +52,7 @@ class _PdfviewState extends State<Pdfview> {
       GlobalKey<SfSignaturePadState>();
   final GlobalKey _repaintBoundaryKey = GlobalKey();
 
-  Offset _signaturePosition =
-      Offset(100, 100); // Starting position of the signature
+  Offset _signaturePosition = Offset(100, 100);
   bool _showSignature = true;
   bool _showImage = true;
   Offset _imagesPosition = Offset(100, 100);
@@ -467,7 +466,8 @@ class _PdfviewState extends State<Pdfview> {
       PdfDocument document = PdfDocument(inputBytes: pdfBytes);
       PdfPage page = document.pages[0];
 
-      final double pdfPageWidth = page.size.width;
+   
+ final double pdfPageWidth = page.size.width;
       final double pdfPageHeight = page.size.height;
 
       final screenSize = MediaQuery.of(context).size;
@@ -475,15 +475,17 @@ class _PdfviewState extends State<Pdfview> {
       double scaleX = pdfPageWidth / screenSize.width;
       double scaleY = pdfPageHeight / screenSize.height;
 
-      double signatureWidth = 100;
-      double signatureHeight = 50;
+      double signatureWidth = 150; 
+      double signatureHeight = 75; 
       double imageWidth = 50;
       double imageHeight = 50;
       double textHeight = 20;
       double dateHeight = 10;
 
-      double adjustedSignatureX = _signaturePosition.dx * scaleX;
-      double adjustedSignatureY = pdfPageHeight - signatureHeight - 30;
+     
+       double adjustedSignatureX = _signaturePosition.dx * scaleX;
+      double adjustedSignatureY = pdfPageHeight - signatureHeight - 300;
+
 
       if (imageBytes != null) {
         final PdfBitmap signatureBitmap = PdfBitmap(imageBytes!);
@@ -522,14 +524,14 @@ class _PdfviewState extends State<Pdfview> {
       double adjustedDateX = _datePosition.dx * scaleX;
       double adjustedDateY = pdfPageHeight - dateHeight - 30;
 
-      final PdfFont dateFont =
-          PdfStandardFont(PdfFontFamily.helvetica, 10 * scaleY);
-      page.graphics.drawString(
-        _getCurrentDate(),
-        dateFont,
-        bounds: Rect.fromLTWH(
-            adjustedDateX, adjustedDateY, page.size.width, page.size.height),
-      );
+      // final PdfFont dateFont =
+      //     PdfStandardFont(PdfFontFamily.helvetica, 10 * scaleY);
+      // page.graphics.drawString(
+      //   _getCurrentDate(),
+      //   dateFont,
+      //   bounds: Rect.fromLTWH(
+      //       adjustedDateX, adjustedDateY, page.size.width, page.size.height),
+      // );
 
       // Save the updated PDF to a byte array
       List<int> updatedPdfBytes = await document.save();
@@ -635,22 +637,32 @@ class _PdfviewState extends State<Pdfview> {
                     .collection('Users')
                     .doc(FirebaseAuth.instance.currentUser!.uid)
                     .get();
-
-                await _savePdf();
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => NotificationScreens(),
-                  ),
-                );
-
-                if (!documentSnapshot.exists ||
+ if (!documentSnapshot.exists ||
                     documentSnapshot.get('rool') != 'ຄະນະບໍດີ') {
                   notify();
                 }
-                Navigator.pop(context);
+
+                await _savePdf();
+
+                // await Navigator.push(
+                //   context,
+                //   MaterialPageRoute(
+                //     builder: (context) => NotificationScreens(),
+                //   ),
+                // ).whenComplete((){
+                //    Navigator.pop(context);
+                // });
+                   Navigator.pop(context);
+                   Navigator.pop(context);
+
+              
+
+               
               } catch (e) {
                 print('Error: $e');
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Failed to save data: $e')),
+                );
               }
             },
             icon: CircleAvatar(
