@@ -669,7 +669,9 @@ class _EmployeeRecordsSerceenState extends State<EmployeeRecordsSerceen> {
                                                         TextOverflow.ellipsis,
                                                   ),
                                                   Text(
-                                                    record['status'] != null
+                                                    record['status'] != null &&
+                                                            record['status'] !=
+                                                                '------'
                                                         ? record['status']
                                                             .toString()
                                                         : '',

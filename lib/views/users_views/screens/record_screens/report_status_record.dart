@@ -46,13 +46,10 @@ class _ReportEmployeeState extends State<ReportMonthStatus> {
     for (var employeeDoc in employeeSnapshot.docs) {
       final employeeDataMap = employeeDoc.data() as Map<String, dynamic>;
 
-
       final employeeName = employeeDataMap['name'] ?? 'ບໍ່ມີຂໍ້ມູນ';
 
-   
       final recordSnapshot =
           await employeeDoc.reference.collection('Record').get();
-
 
       for (var recordDoc in recordSnapshot.docs) {
         final recordData = recordDoc.data() as Map<String, dynamic>;
@@ -63,6 +60,12 @@ class _ReportEmployeeState extends State<ReportMonthStatus> {
         final clockOutPM = recordData['clockOutPM'] ?? 'ບໍ່ມີຂໍ້ມູນ';
         final status = recordData['status'] ?? 'ບໍ່ມີຂໍ້ມູນ';
         final typeClockOut = recordData['type_clock_out'] ?? 'ບໍ່ມີຂໍ້ມູນ';
+        final statusOutDoor = (recordData['status_out_door'] == null ||
+                recordData['status_out_door'] == 'ບໍ່ມີຂໍ້ມູນ' ||
+                (recordData['status_out_door'] is String &&
+                    recordData['status_out_door'].trim().isEmpty))
+            ? '------'
+            : recordData['status_out_door'];
 
         bool matchesStatus = true;
         if (widget.searchstatus.isNotEmpty) {
@@ -96,6 +99,8 @@ class _ReportEmployeeState extends State<ReportMonthStatus> {
               'clockInPM': clockInPM,
               'clockOutPM': clockOutPM,
               'status': status,
+              'status_out_door': statusOutDoor,
+
               'type_clock_out':
                   typeClockOut, // Add type_clock_out to employeeData
             });
@@ -189,6 +194,14 @@ class _ReportEmployeeState extends State<ReportMonthStatus> {
                             font: font,
                             fontSize: 15,
                           ),
+                        ),
+                      ),
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.all(8),
+                        child: pw.Text(
+                          'ອອກວຽກນອກ',
+                          style: pw.TextStyle(font: font, fontSize: 10),
+                          textAlign: pw.TextAlign.center,
                         ),
                       ),
                     ],
@@ -292,6 +305,14 @@ class _ReportEmployeeState extends State<ReportMonthStatus> {
                             textAlign: pw.TextAlign.center,
                           ),
                         ),
+                        pw.Padding(
+                          padding: const pw.EdgeInsets.all(8),
+                          child: pw.Text(
+                            'ອອກວຽກນອກ',
+                            style: pw.TextStyle(font: font, fontSize: 10),
+                            textAlign: pw.TextAlign.center,
+                          ),
+                        ),
                       ],
                     ),
                     // Data rows
@@ -377,6 +398,17 @@ class _ReportEmployeeState extends State<ReportMonthStatus> {
                               e['type_clock_out'],
                               style: pw.TextStyle(font: font, fontSize: 10),
                               textAlign: pw.TextAlign.left,
+                            ),
+                          ),
+                          pw.Padding(
+                            padding: const pw.EdgeInsets.all(8),
+                            child: pw.Text(
+                              e['status_out_door'] != null &&
+                                      e['status_out_door'] != 'null'
+                                  ? e['status_out_door'].toString()
+                                  : '------',
+                              style: pw.TextStyle(font: font, fontSize: 10),
+                              textAlign: pw.TextAlign.center,
                             ),
                           ),
                         ],
